@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.constants as c
 import scipy.optimize as opt
-import scipy.stats as st
 
 import os
 parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -31,7 +30,7 @@ Ue = data[:,0]
 dUe = 2*c.milli
 dUrel = 0.03
 Ua = data[:,1:3]
-dUa = dUrel*Ua
+dUa = dUrel*Ua + 2*c.milli
 
 # Linearer Fit
 # V0 = -Ua/Ue
@@ -46,12 +45,12 @@ dUa0 = np.zeros(2)
 def lin(x, m, b):
     return m * x + b
 
-popt, pcov = opt.curve_fit(lin, Ue, Ua[:,0])
+popt, pcov = opt.curve_fit(lin, Ue, Ua[:,0], sigma=dUa[:,0])
 V0[0] = popt[0]
 dV0[0] = pcov[0,0]
 Ua0[0] = popt[1]
 dUa0[0] = pcov[1,1]
-popt, pcov = opt.curve_fit(lin, Ue[2:-2], Ua[2:-2,1])
+popt, pcov = opt.curve_fit(lin, Ue[2:-2], Ua[2:-2,1], sigma=dUa[2:-2,1])
 V0[1] = popt[0]
 dV0[1] = pcov[0,0]
 Ua0[1] = popt[1]
@@ -72,9 +71,11 @@ print "Berechnete Betriebsverstaerkung:"
 print "Vb = "+str(Vb)+"-/+"+str(dVb)
 
 # Chi-Quadrate
-print st.chisquare(np.array([16, 18, 16, 14, 12, 12]), f_exp=np.array([16, 16, 16, 16, 16, 8]))
-print papstat.chisquared(np.array([16, 18, 16, 14, 12, 12]), np.array([16, 16, 16, 16, 16, 8]))
-print papstat.chisquared_red(Ua[:,0], lin(Ue, -V0[0], Ua0[0]), ddof=2)
+chisq = np.zeros((2,2))
+chisq[0] = np.array(papstat.chisquared(Ua[:,0], lin(Ue, -V0[0], Ua0[0]), std=dUa[:,0], ddof=2))
+chisq[1] = np.array(papstat.chisquared(Ua[2:-2,1], lin(Ue[2:-2], -V0[1], Ua0[1]), std=dUa[2:-2,1], ddof=2))
+
+print chisq
 
 # plot
 plt.clf()

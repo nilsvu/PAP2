@@ -6,7 +6,7 @@ import scipy.optimize as opt
 import os
 parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.sys.path.insert(0,parentdir)
-import papstat
+import papstats
 
 # Eingangswiderstand
 Re = 3*c.kilo
@@ -66,11 +66,9 @@ print "Berechnete Betriebsverstaerkung:"
 print "Vb = "+str(Vb)+"-/+"+str(dVb)
 
 # Chi-Quadrate
-chisq = np.zeros((2,2))
-chisq[0] = np.array(papstat.chisquared(Ua[slice[0],0], lin(Ue[slice[0]], -V0[0]), std=dUa[slice[0],0], ddof=1))
-chisq[1] = np.array(papstat.chisquared(Ua[slice[1],1], lin(Ue[slice[1]], -V0[1]), std=dUa[slice[1],1], ddof=1))
+pstats = [papstats.PAPStats(Ua[slice[i],i], lin(Ue[slice[i]], -V0[i]), std=dUa[slice[i],i], ddof=1) for i in range(2)]
 
-print "Chi-Quadrate:", chisq
+print "PAPStats:", pstats
 
 # plot
 plt.clf()

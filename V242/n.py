@@ -72,10 +72,14 @@ print "PAPStats:", pstats
 
 # plot
 plt.clf()
-plt.errorbar(Ue, Ua[:,0], xerr=dUe, yerr=dUa[:,0], ls='none')
-plt.plot(Ue, -V0[0] * Ue)
-plt.errorbar(Ue, Ua[:,1], xerr=dUe, yerr=dUa[:,1], ls='none')
-plt.plot(Ue, -V0[1] * Ue)
+plt.title('Ausgangsspannung als Funktion der Eingangsspannung fuer Gleichstrom')
+plt.errorbar(Ue, Ua[:,0], xerr=dUe, yerr=dUa[:,0], ls='none', label=r'Rg=Rg1=48.7k$\Omega$')
+plt.plot(Ue, -V0[0] * Ue, label='Fit zu Rg=Rg1')
+plt.errorbar(Ue, Ua[:,1], xerr=dUe, yerr=dUa[:,1], ls='none', label=r'Rg=Rg2=274k$\Omega$')
+plt.plot(Ue, -V0[1] * Ue, label='Fit zu Rg=Rg2')
+plt.xlabel('Ue (Eingangsspannung) [V]')
+plt.ylabel('Ua (Ausgangsspannung) [V]')
+plt.legend()
 fig = plt.gcf()
 fig.set_size_inches(11.69,8.27)
 plt.savefig('1.a.png', dpi=144)

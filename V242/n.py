@@ -39,28 +39,23 @@ dUa = dUrel*Ua + 2*c.milli
 
 V0 = np.zeros(2)
 dV0 = np.zeros(2)
-Ua0 = np.zeros(2)
-dUa0 = np.zeros(2)
 
-def lin(x, m, b):
-    return m * x + b
+slice = [slice(None, None), slice(2, -2)]
 
-popt, pcov = opt.curve_fit(lin, Ue, Ua[:,0], sigma=dUa[:,0])
+def lin(x, m):
+    return m * x
+
+popt, pcov = opt.curve_fit(lin, Ue[slice[0]], Ua[slice[0],0], sigma=dUa[slice[0],0])
 V0[0] = popt[0]
 dV0[0] = pcov[0,0]
-Ua0[0] = popt[1]
-dUa0[0] = pcov[1,1]
-popt, pcov = opt.curve_fit(lin, Ue[2:-2], Ua[2:-2,1], sigma=dUa[2:-2,1])
+popt, pcov = opt.curve_fit(lin, Ue[slice[1]], Ua[slice[1],1], sigma=dUa[slice[1],1])
 V0[1] = popt[0]
 dV0[1] = pcov[0,0]
-Ua0[1] = popt[1]
-dUa0[1] = pcov[1,1]
 
 V0 *= -1
 
-print "Linearer Fit Ua = -V0 * Ue + Ua0:"
+print "Linearer Fit Ua = -V0 * Ue:"
 print "V0 = "+str(V0)+"+/-"+str(dV0)
-print "Ua0 = "+str(Ua0)+"+/-"+str(dUa0)
 
 # Berechnete Betriebsverstaerkung
 Vb = Rg[0:2]/Re
@@ -72,17 +67,17 @@ print "Vb = "+str(Vb)+"-/+"+str(dVb)
 
 # Chi-Quadrate
 chisq = np.zeros((2,2))
-chisq[0] = np.array(papstat.chisquared(Ua[:,0], lin(Ue, -V0[0], Ua0[0]), std=dUa[:,0], ddof=2))
-chisq[1] = np.array(papstat.chisquared(Ua[2:-2,1], lin(Ue[2:-2], -V0[1], Ua0[1]), std=dUa[2:-2,1], ddof=2))
+chisq[0] = np.array(papstat.chisquared(Ua[slice[0],0], lin(Ue[slice[0]], -V0[0]), std=dUa[slice[0],0], ddof=1))
+chisq[1] = np.array(papstat.chisquared(Ua[slice[1],1], lin(Ue[slice[1]], -V0[1]), std=dUa[slice[1],1], ddof=1))
 
 print chisq
 
 # plot
 plt.clf()
 plt.errorbar(Ue, Ua[:,0], xerr=dUe, yerr=dUa[:,0], ls='none')
-plt.plot(Ue, -V0[0] * Ue + Ua0[0])
-plt.errorbar(Ue,Ua[:,1], xerr=dUe, yerr=dUa[:,1], ls='none')
-plt.plot(Ue, -V0[1] * Ue + Ua0[1])
+plt.plot(Ue, -V0[0] * Ue)
+plt.errorbar(Ue, Ua[:,1], xerr=dUe, yerr=dUa[:,1], ls='none')
+plt.plot(Ue, -V0[1] * Ue)
 fig = plt.gcf()
 fig.set_size_inches(11.69,8.27)
 plt.savefig('1.a.png', dpi=144)

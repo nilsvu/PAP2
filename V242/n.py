@@ -40,7 +40,7 @@ dUa = dUrel*Ua + 2*c.milli
 V0 = np.zeros(2)
 dV0 = np.zeros(2)
 
-slice = [slice(None, None), slice(2, -2)]
+slice = [slice(None, None), slice(2, -3)]
 
 def lin(x, m):
     return m * x
@@ -70,7 +70,7 @@ chisq = np.zeros((2,2))
 chisq[0] = np.array(papstat.chisquared(Ua[slice[0],0], lin(Ue[slice[0]], -V0[0]), std=dUa[slice[0],0], ddof=1))
 chisq[1] = np.array(papstat.chisquared(Ua[slice[1],1], lin(Ue[slice[1]], -V0[1]), std=dUa[slice[1],1], ddof=1))
 
-print chisq
+print "Chi-Quadrate:", chisq
 
 # plot
 plt.clf()

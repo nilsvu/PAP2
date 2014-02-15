@@ -1,3 +1,6 @@
+# Plots
+*.png
+
 # Mac
 .DS_Store
 

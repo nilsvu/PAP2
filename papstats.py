@@ -20,7 +20,9 @@ class PAPStats:
     def legendstring(self):
         return '$\chi^2=%.2f$, $\chi^2_{red}=%.2f$, $r^2=%.5f$' % (self.chisq[0], self.chisq[1], self.rsquared)
 
-def pformat(v, dv, label, signi=2, unit=''):
+def pformat(v, dv, label, signi=2, unit=None):
+    if unit is None:
+        unit = ''
     if dv is not None:
         e = get_e(dv)
         o = 10**(e-signi+1)

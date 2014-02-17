@@ -1,13 +1,13 @@
 import numpy as np
 import scipy.stats as st
 
-def chisquared(ydata, ymodel, std=1, ddof=0):
-    chisq = np.sum(((ydata-ymodel)/std)**2)
+def chisquared(ydata, ymodel, sigma=1, ddof=0):
+    chisq = np.sum(((ydata-ymodel)/sigma)**2)
     return chisq, chisq/(ydata.size-ddof)
 
 class PAPStats:
     def __init__(self, ydata, ymodel, sigma=1, ddof=0):
-        self.chisq = chisquared(ydata, ymodel, std, ddof)
+        self.chisq = chisquared(ydata, ymodel, sigma, ddof)
         self.pearsonr = st.pearsonr(ydata, ymodel)
         self.rsquared = self.pearsonr[0]**2
 

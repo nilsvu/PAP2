@@ -16,3 +16,6 @@ class PAPStats:
 
     def __repr__(self):
         return str(self)
+
+    def legendstring(self):
+        return '$\chi^2=%.2f$, $\chi^2_{red}=%.2f$, $r^2=%.5f$' % (self.chisq[0], self.chisq[1], self.rsquared)

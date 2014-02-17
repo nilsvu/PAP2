@@ -20,5 +20,22 @@ class PAPStats:
     def legendstring(self):
         return '$\chi^2=%.2f$, $\chi^2_{red}=%.2f$, $r^2=%.5f$' % (self.chisq[0], self.chisq[1], self.rsquared)
 
-def pformat(v, dv, label):
-    return '$%s=%f\pm%.2g$' % (label, v, dv)
+def pformat(v, dv, label, signi=2, unit=''):
+    if dv is not None:
+        e = get_e(dv)
+        o = 10**(e-signi+1)
+        v = round_ordnung(v, o)
+        dv = round_ordnung(dv, o)
+        return (r"$%s=(%."+str(signi-1)+"f\pm%."+str(signi-1)+"f)*10^{%d}%s$") % (label, v / 10**e, dv / 10**e, e, unit)
+    else:
+        e = get_e(v)
+        o = 10**(e-signi+1)
+        v = round_ordnung(v, o)
+        string = r"$%s=%.1f*10^{%d}%s$"
+        return string % (label, v/10.0**e, e,  unit)
+
+def round_ordnung(v, o):
+    return np.round(v / o) * o
+
+def get_e(zahl):
+    return np.floor(np.log10(zahl))

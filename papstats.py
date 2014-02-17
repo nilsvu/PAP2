@@ -6,7 +6,7 @@ def chisquared(ydata, ymodel, std=1, ddof=0):
     return chisq, chisq/(ydata.size-ddof)
 
 class PAPStats:
-    def __init__(self, ydata, ymodel, std=1, ddof=0):
+    def __init__(self, ydata, ymodel, sigma=1, ddof=0):
         self.chisq = chisquared(ydata, ymodel, std, ddof)
         self.pearsonr = st.pearsonr(ydata, ymodel)
         self.rsquared = self.pearsonr[0]**2

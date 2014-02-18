@@ -1,6 +1,7 @@
 # Plots
 *.png
 *.pdf
+*.BMP
 
 # Mac
 .DS_Store

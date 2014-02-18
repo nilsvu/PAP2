@@ -40,8 +40,9 @@ gf = Uaus/Uein/D
 
 # Fit Frequenzgang
 
-#sl_bounds = [450, 1e5]
-sl_bounds = [5e2, 1e5] # TODO: compute in loop
+sl_bounds = [5e2, 1e5]
+#sl_bounds = [1,1e7]
+
 sl = (f > sl_bounds[0]) & (f < sl_bounds[1])
 
 def fit_gf(f, V, O1, O2, n1, n2):
@@ -53,12 +54,24 @@ pstats = papstats.PAPStats(gf[sl], fit_gf(f[sl], *popt), ddof=5)
 varstr = ['V','\Omega_1','\Omega_2','n_1','n_2']
 varunit = [None,'Hz','Hz',None,None]
 
+# Berechnung der Bandbreite
+
+def gf_sq(f, *p):
+    return fit_gf(f, *p)**2
+
+B = int.quad(gf_sq, 0, np.inf, args=tuple(popt))[0]
+print B
+#B = 48100807970.4
+
+# plot
 plt.clf()
-plt.scatter(f, gf, label='Messpunkte')
+plt.scatter(f, gf, label='Messpunkte', s=10, c='black', marker='s')
 fspace = np.logspace(np.log10(sl_bounds[0]),np.log10(sl_bounds[1]), num=200)
-plt.plot(fspace, fit_gf(fspace, *popt), label=r'Fit $g(f)=\frac{V}{\sqrt{1+(\frac{\Omega_1}{f})^{2*n_1}}\sqrt{1+(\frac{f}{\Omega_2})^{2*n_2}}}$ mit:'+'\n%s\n%s' % (''.join(['\n'+papstats.pformat(popt[i],pcov[i,i],label=varstr[i],unit=varunit[i]) for i in range(len(popt))]), pstats.legendstring()))
-for sl_bound in sl_bounds:
-    plt.vlines(sl_bound, 5, 1.5e3, label='Fit-Bereich Grenze bei %s' % papstats.pformat(sl_bound,  unit='Hz'))
+plt.plot(fspace, fit_gf(fspace, *popt), label=r'Fit $g(f)=\frac{V}{\sqrt{1+(\frac{\Omega_1}{f})^{2*n_1}}\sqrt{1+(\frac{f}{\Omega_2})^{2*n_2}}}$ mit:'+'\n%s\n%s\n$B=\int_0^\infty \! g(f)^2 \mathrm{d}f=$%s' % (''.join(['\n'+papstats.pformat(popt[i],pcov[i,i],label=varstr[i],unit=varunit[i]) for i in range(len(popt))]), pstats.legendstring(), papstats.pformat(B, signi=3, unit='Hz')))
+ybounds = (5,1.5e3)
+for i in range(len(sl_bounds)):
+    plt.annotate('Fit-Bereich Grenze\nbei %s' % papstats.pformat(sl_bounds[i],  unit='Hz'), (sl_bounds[i], ybounds[1]), ha=['right','left'][i], va='top', textcoords='offset points',  xytext=([-1,1][i]*10,0))
+    plt.vlines(sl_bounds[i], *ybounds)
 plt.xscale('log')
 plt.yscale('log')
 plt.xlim(5e1,1e6)
@@ -67,14 +80,6 @@ plt.legend(loc='lower center')
 fig = plt.gcf()
 fig.set_size_inches(11.69,8.27)
 plt.savefig('2.png', dpi=144)
-
-# Berechnung der Bandbreite
-
-def gf_sq(f, *p):
-    return fit_gf(f, *p)**2
-
-B = int.quad(gf_sq, 0, np.inf, args=tuple(popt))[0]
-print "B = %f" % B
 
 
 #####

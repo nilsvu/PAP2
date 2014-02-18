@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.stats as st
+import uncertainties as unc
 
 def chisquared(ydata, ymodel, sigma=1, ddof=0):
     chisq = np.sum(((ydata-ymodel)/sigma)**2)
@@ -20,22 +21,29 @@ class PAPStats:
     def legendstring(self):
         return '$\chi^2=%.2f$, $\chi^2_{red}=%.2f$, $r^2=%.5f$' % (self.chisq[0], self.chisq[1], self.rsquared)
 
-def pformat(v, dv=None, label=None, signi=2, unit=None):
+
+def pformat(v, dv=None, prec=2, label=None, unit=None):
     if unit is None:
         unit = ''
     if label is None:
         label = ''
     else:
         label += '='
+
+    # use uncertainties module formatting
+    if isinstance(v, unc.Variable):
+        return '$'+label+ '{:.2uL}'.format(v) +unit+'$'
+
+    # format numbers without uncertainties
     if dv is not None:
         e = get_e(dv)
-        o = 10**(e-signi+1)
+        o = 10**(e-prec+1)
         v = round_ordnung(v, o)
         dv = round_ordnung(dv, o)
-        return (r"$%s(%."+str(signi-1)+"f\pm%."+str(signi-1)+"f)*10^{%d}%s$") % (label, v / 10**e, dv / 10**e, e, unit)
+        return (r"$%s(%."+str(prec-1)+"f\pm%."+str(prec-1)+"f)*10^{%d}%s$") % (label, v / 10**e, dv / 10**e, e, unit)
     else:
         e = get_e(v)
-        o = 10**(e-signi+1)
+        o = 10**(e-prec+1)
         v = round_ordnung(v, o)
         string = r"$%s%.1f*10^{%d}%s$"
         return string % (label, v/10.0**e, e,  unit)

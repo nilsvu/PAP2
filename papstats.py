@@ -45,7 +45,7 @@ def pformat(v, dv=None, prec=2, label=None, unit=None):
         e = get_e(v)
         o = 10**(e-prec+1)
         v = round_ordnung(v, o)
-        string = r"$%s%."+str(signi-1)+"f*10^{%d}%s$"
+        string = r"$%s%."+str(prec-1)+"f*10^{%d}%s$"
         return string % (label, v/10.0**e, e,  unit)
 
 def round_ordnung(v, o):

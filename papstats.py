@@ -31,9 +31,9 @@ def pformat(v, dv=None, prec=2, label=None, unit=None):
         label += '='
 
     # use uncertainties module formatting
-    if isinstance(v, unc.Variable):
+    if isinstance(v, unc.Variable) or isinstance(v, unc.AffineScalarFunc):
         return '$'+label+ '{:.2uL}'.format(v) +unit+'$'
-
+    
     # format numbers without uncertainties
     if dv is not None:
         e = get_e(dv)
@@ -53,3 +53,7 @@ def round_ordnung(v, o):
 
 def get_e(zahl):
     return np.floor(np.log10(zahl))
+
+def print_rdiff(r, r_lit):
+    d = np.abs(r-r_lit)
+    print 'Abweichung: {:.2u}\nrel. Abweichung: {:.2}%\nSigmabereich: {:.2}'.format(d, d.n/r_lit.n*100, d.n/d.s)

@@ -28,7 +28,7 @@ data = np.loadtxt('3.2.txt', skiprows=1)
 Uein = 0.2
 f = data[:,0]
 Uaus = data[:,1]
-Uaus -= 0.0014073 # Verstärkerrauschen
+#Uaus -= 0.0014073 # Verstärkerrauschen
 
 gf = Uaus/Uein/D
 
@@ -125,8 +125,9 @@ Uaus = data[:,2]*const.milli
 dUrel_mess = unc.ufloat(1, 0.003) # 0.3% Messfehler
 dUrel_stat = unp.uarray(1, (data[:,3]*const.milli/np.sqrt(N)) / Uaus) # Fehler des Mittelwerts
 Uaus = unp.uarray(Uaus, Uaus * unp.std_devs(dUrel_mess + dUrel_stat))  # Messfehler und Fehler des Mittelwerts quadratisch addiert
+Uv = Uaus[0]
 
-Usq = Uaus[1:]**2-Uaus[0]**2
+Usq = Uaus[1:]**2-Uv**2
 
 # Linearer Fit Usq=c*R
 
@@ -154,3 +155,55 @@ kB = c/(4*T*B)
 print kB
 
 papstats.print_rdiff(kB, unc.ufloat(1.3806488e-23, 1.3e-29))
+
+
+#####
+print "4 (Temperaturabhängigkeit)"
+#####
+
+data = np.loadtxt('4.txt', skiprows=1)
+
+R1 = data[:,0]
+R2 = data[:,1]
+R = unp.uarray(R1+(R1-R2)/2, np.abs(R1-R2))
+T1 = data[:,2]+const.zero_Celsius
+T2 = data[:,3]+const.zero_Celsius
+T = unp.uarray(T1+(T1-T2)/2, np.abs(T1-T2))
+N = data[:,4]
+Uaus = data[:,5]*const.milli
+dUrel_mess = unc.ufloat(1, 0.003) # 0.3% Messfehler
+dUrel_stat = unp.uarray(1, (data[:,6]*const.milli/np.sqrt(N)) / Uaus) # Fehler des Mittelwerts
+Uaus = unp.uarray(Uaus, Uaus * unp.std_devs(dUrel_mess + dUrel_stat))  # Messfehler und Fehler des Mittelwerts quadratisch addiert
+
+Usq = (Uaus**2-Uv**2)/R
+
+# Linearer Fit Usq=c*(T-T0)
+
+#def fit_Usq(T, c):
+#    return c*x
+def fit_Usq(T, c, T0):
+    return c*(T-T0)
+
+popt, pcov = opt.curve_fit(fit_Usq, unp.nominal_values(T), unp.nominal_values(Usq), sigma=unp.std_devs(T+Usq))
+c = unc.ufloat(popt[0], pcov[0,0], 'c')
+T0 = unc.ufloat(popt[1], pcov[1,1], 'T0')
+pstats = papstats.PAPStats(unp.nominal_values(Usq), fit_Usq(unp.nominal_values(T), *popt), sigma=unp.std_devs(T+Usq), ddof=1)
+
+plt.clf()
+plt.title('Diagramm 3.4: Nyquist Beziehung zwischen effektiver Rauschspannung und Temperatur')
+plt.errorbar(unp.nominal_values(T), unp.nominal_values(Usq)/(const.milli**2)*const.kilo, xerr=unp.std_devs(T), yerr=unp.std_devs(Usq)/(const.milli**2)*const.kilo, ls='none', label='Messpunkte')
+plt.plot(unp.nominal_values(T), fit_Usq(unp.nominal_values(T), *popt)/(const.milli**2)*const.kilo, label=r'Fit $\frac{(U_{aus}^2-U_V^2)}{R}=c*T$ mit:'+'\n%s\n%s' % (papstats.pformat(c, label='c', unit=r'\frac{V^2}{K*\Omega}'), pstats.legendstring()))
+plt.legend(loc='lower right')
+plt.xlabel('Temperatur $T \, [K]$')
+plt.ylabel(r'$\frac{(U_{aus}^2-U_V^2)}{R} \, [\frac{mV^2}{k \Omega}]$')
+fig = plt.gcf()
+fig.set_size_inches(11.69,8.27)
+plt.savefig('3.4.png', dpi=144)
+
+# Berechnung der Boltzmannkonstante
+
+kB = c/(4*B)
+print kB
+papstats.print_rdiff(kB, unc.ufloat(1.3806488e-23, 1.3e-29))
+
+print T0

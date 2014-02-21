@@ -7,14 +7,18 @@ import matplotlib.pyplot as plt
 import scipy.constants as c
 import scipy.optimize as opt
 
+import sys
 import os
 parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.sys.path.insert(0,parentdir)
 import papstats
 
 def setAxesLabel():
-    plt.xlabel('U_E in V')
-    plt.ylabel('U_A in V')
+    plt.xlabel(r'$U_E$ in $V$')
+    plt.ylabel(r'$U_A$ in $V$')
+
+
+ohm = u"\u03A9"
 
 plt.ion()
 plt.cla()
@@ -33,10 +37,10 @@ R_G = np.array([48.7, 274, 680]) * c.kilo
 dR_G = dR_rel * R_G
 
 print "Unsere Widerstände:"
-print "Eingangswiderstand:", R_E, '+/-', dR_E
+print "Eingangswiderstand:", R_E / c.kilo, '+/-', dR_E/c.kilo, "k"+ohm
 print "Gegenkopplungswiderstände:"
 for i in range(R_G.size):
-    print R_G[i], "+/-", dR_G[i]
+    print str(i+1)+'.:', R_G[i]/c.kilo, "+/-", dR_G[i]/c.kilo, 'k'+ohm
 
 
 print ''
@@ -54,9 +58,9 @@ dU_A_rel = 3e-2
 dU_A = U_A * dU_A_rel + 40*c.milli
 
 # Plotten der Messwerte mit den Fehlern
-plt.errorbar(x=U_E, y=U_A[:,0], xerr=dU_E, yerr=dU_A[:,0],ls='none', label=r'R_G=48.7k$\Omega$')
-plt.errorbar(x=U_E, y=U_A[:,1], xerr=dU_E, yerr=dU_A[:,1],ls='none', label=r'R_G=274k$\Omega$')
-plt.title('Messdaten mit Fehlern')
+plt.errorbar(x=U_E, y=U_A[:,0], xerr=dU_E, yerr=dU_A[:,0],ls='none', label=r'$R_G=48.7k\Omega$')
+plt.errorbar(x=U_E, y=U_A[:,1], xerr=dU_E, yerr=dU_A[:,1],ls='none', label=r'$R_G=274k\Omega$')
+plt.title('Messdaten 1 a) mit Ungenauigkeiten')
 setAxesLabel()
 plt.legend()
 
@@ -87,7 +91,9 @@ V_0[1]  = popt[0]
 dV_0[1] = pcov[0,0]
 
 print "Fit-Werte:"
-print "V_0:", V_0, "+/-", dV_0
+print "V_0:"
+for i in range(V_0.size):
+    print float("%.4g" % V_0[i]), "+/-", dV_0[i]
 
 
 # Berechnete Verstärkung
@@ -104,19 +110,30 @@ pstats = [papstats.PAPStats(U_A[pktSelect[i],i], fU_A(U_E[pktSelect[i]], V_0[i])
 # Plot 1 48.7kOhm
 plt.errorbar(x=U_E, y=U_A[:,0], xerr=dU_E, yerr=dU_A[:,0],ls='none')
 plt.plot(U_E, fU_A(U_E, V_0[0]))
-plt.title(ur'Ausgangsspannung als Funktion der Eingangsspannung für R_G = 48.7k$\Omega$')
+plt.title(ur'Ausgangsspannung als Funktion der Eingangsspannung für $R_G = 48.7k\Omega$')
 setAxesLabel()
 
-plt.savefig('1.a.1.png')
+i = 0
+text = ur"$V_{fit} = %.4f \pm %.4f$" % (V_0[i], dV_0[i]) + "\n"
+text += ur"$V_{berechnet} = %.2f \pm %.2f$" % (V_b[i], dV_b[i]) + "\n"
+text += pstats[i].legendstring()
+plt.text(-0.25, 0, text, verticalalignment="top")
 
+plt.savefig('1.a.1.png')
 plt.cla()
 
 
 # Plot 2 274kOhm
 plt.errorbar(x=U_E, y=U_A[:,1], xerr=dU_E, yerr=dU_A[:,1],ls='none')
 plt.plot(U_E[pktSelect[1]], fU_A(U_E[pktSelect[1]], V_0[1]))
-plt.title(ur'Ausgangsspannung als Funktion der Eingangsspannung für R_G = 274k$\Omega$')
+plt.title(ur'Ausgangsspannung als Funktion der Eingangsspannung für $R_G = 274k\Omega$')
 setAxesLabel()
+
+i = 1
+text = ur"$V_{fit} = %.2f \pm %.2f$" % (V_0[i], dV_0[i]) + "\n"
+text += ur"$V_{berechnet} = %.2f \pm %.2f$" % (V_b[i], dV_b[i]) + "\n"
+text += pstats[i].legendstring()
+plt.text(-0.25, 0, text, verticalalignment="top")
 
 plt.savefig('1.a.2.png')
 
@@ -148,9 +165,10 @@ U_A = data[:, 1:3]
 dU_A_rel = 3e-2
 dU_A = U_A * dU_A_rel + 40*c.milli
 
-plt.errorbar(U_E, U_A[:,0], xerr=dU_E, yerr=dU_A[:,0], ls='none', label=r'R_G=274k$\Omega$')
-plt.errorbar(U_E, U_A[:,1], xerr=dU_E, yerr=dU_A[:,1], ls='none', label=r'R_G=680k$\Omega$')
+plt.errorbar(U_E, U_A[:,0], xerr=dU_E, yerr=dU_A[:,0], ls='none', label=r'$R_G=274k\Omega$')
+plt.errorbar(U_E, U_A[:,1], xerr=dU_E, yerr=dU_A[:,1], ls='none', label=r'$R_G=680k\Omega$')
 setAxesLabel()
+plt.title('Messdaten 1 b) mit Ungenauigkeiten')
 plt.legend(loc=2)
 
 plt.savefig('1.b.messdaten.png')
@@ -158,7 +176,7 @@ plt.cla()
 
 # Fitting der Daten:
 # V_0 = - U_A / U_E
-# => U_A = -V_0 * U_E
+# => U_A = V_0 * U_E
 
 def fU_A(U_E, V_0):
     return V_0 * U_E
@@ -193,8 +211,14 @@ pstats = [papstats.PAPStats(U_A[pktSelect[i],i], fU_A(U_E[pktSelect[i]], V_0[i])
 # Plot 1 48.7kOhm
 plt.errorbar(x=U_E, y=U_A[:,0], xerr=dU_E, yerr=dU_A[:,0],ls='none')
 plt.plot(U_E[pktSelect[0]], fU_A(U_E[pktSelect[0]], V_0[0]))
-plt.title(ur'Ausgangsspannung als Funktion der Eingangsspannung für R_G = 274k$\Omega$')
+plt.title(ur'Ausgangsspannung als Funktion der Eingangsspannung für $R_G = 274k\Omega$')
 setAxesLabel()
+
+i = 0
+text = ur"$V_{fit} = %.2f \pm %.2f$" % (V_0[i], dV_0[i]) + "\n"
+text += ur"$V_{berechnet} = %.2f \pm %.2f$" % (V_b[i], dV_b[i]) + "\n"
+text += pstats[i].legendstring()
+plt.text(0.05, 16, text, verticalalignment="top")
 
 plt.savefig('1.b.1.png')
 
@@ -204,8 +228,14 @@ plt.cla()
 # Plot 2 274kOhm
 plt.errorbar(x=U_E, y=U_A[:,1], xerr=dU_E, yerr=dU_A[:,1],ls='none')
 plt.plot(U_E[pktSelect[1]], fU_A(U_E[pktSelect[1]], V_0[1]))
-plt.title(ur'Ausgangsspannung als Funktion der Eingangsspannung für R_G = 680k$\Omega$')
+plt.title(ur'Ausgangsspannung als Funktion der Eingangsspannung für $R_G = 680k\Omega$')
 setAxesLabel()
+
+i = 1
+text = ur"$V_{fit} = %.1f \pm %.1f$" % (V_0[i], dV_0[i]) + "\n"
+text += ur"$V_{berechnet} = %.1f \pm %.1f$" % (V_b[i], dV_b[i]) + "\n"
+text += pstats[i].legendstring()
+plt.text(0.15, 10, text, verticalalignment="top")
 
 plt.savefig('1.b.2.png')
 plt.cla()
@@ -234,15 +264,18 @@ dU_A = U_A * 3e-2
 V = U_A / U_E
 dV = V * np.sqrt(2) * 3e-2
 
+
+# Doppeltlog. Skala
 plt.xscale('log')
 plt.yscale('log')
-for i in range(V.shape[1]):
-    plt.errorbar(f, V[:,i], xerr=df, yerr=dV[:,i], label='R_G='+str(R_G[i]/c.kilo)+r'k$\Omega$')
-    pass
 
+# Axen beschriften
 plt.xlabel('Frequenz in Hz')
 plt.ylabel('V')
 
+# Plotten der ersten Daten aus 2 a)
+for i in range(V.shape[1]):
+    plt.errorbar(f, V[:,i], xerr=df, yerr=dV[:,i], label=r'$R_G='+str(R_G[i]/c.kilo)+r'k\Omega$')
 
 
 data = np.loadtxt('2.b.txt')
@@ -259,7 +292,8 @@ dU_A = U_A * 3e-2
 V = U_A / U_E
 dV = V * np.sqrt(2) * 3e-2
 
-plt.errorbar(f, V, xerr=df, yerr=dV, label=ur"R_G=48.7k$\Omega$ und C=560pF (rückgekoppelt)")
+plt.errorbar(f, V, xerr=df, yerr=dV, label=ur"$R_G=48.7k\Omega$ und $C=560pF$ (rückgekoppelt)")
+
 
 data = np.loadtxt('2.c.txt')
 
@@ -275,8 +309,10 @@ dU_A = U_A * 3e-2
 V = U_A / U_E
 dV = V * np.sqrt(2) * 3e-2
 
-plt.errorbar(f, V, xerr=df, yerr=dV, label=ur"R_G=48.7k$\Omega$ und C=47nF (vorgeschaltet)")
+plt.errorbar(f, V, xerr=df, yerr=dV, label=ur"$R_G=48.7k\Omega$ und $C=47nF$ (vorgeschaltet)")
 
 
 plt.legend(loc=1)
+plt.title(u'Frequenzgänge: Verstärkung in Abhängigkeit von der Frequenz')
+
 plt.savefig('2.png')

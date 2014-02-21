@@ -161,6 +161,15 @@ fig = plt.gcf()
 fig.set_size_inches(11.69,8.27)
 plt.savefig('3.3.png', dpi=144)
 
+# Kreisplot
+plt.clf()
+plt.title(u'Diagramm 3.3.b: Induktionsspannung in Abhängigkeit vom Winkel der Flachspule')
+plt.polar(unp.nominal_values(a), unp.nominal_values(Uind), marker='+', ls='none')
+plt.polar(aspace, fit_cos(aspace, *unp.nominal_values(popt)))
+fig = plt.gcf()
+fig.set_size_inches(11.69,8.27)
+plt.savefig('3.3.b.png', dpi=144)
+
 # b) induzierte und angelegte Spannung
 
 a = unc.ufloat(0,2)
@@ -207,7 +216,8 @@ plt.savefig('3.5.png', dpi=144)
 print('\n# 3 Bestimmung des Erdmagnetfeldes durch Kompensation')
 #####
 
-Uind = unc.ufloat(320,5)*const.milli/2
+#Uind = unc.ufloat(320,5)*const.milli/2
+Uind = unc.ufloat(170,15)*const.milli/2
 w = unc.ufloat(14.5,0.1)*2*const.pi
 
 Berd = Uind/(nF*AF*w)
@@ -215,10 +225,11 @@ print 'B =', Berd/const.micro, 'muT'
 papstats.print_rdiff(Berd/const.micro, unc.ufloat(49,0))
 
 # Kompensationsmessung
-Uind = unc.ufloat(94.4,2)*const.milli/2
-Ihelm = unc.ufloat(3.48,0.01)*const.milli
+Uind = unc.ufloat(94.4,5)*const.milli/2
+Ihelm = unc.ufloat(62.8,0.05)*const.milli
 Bhor = Uind/(nF*AF*w)
 Bver = B_helmh(Ihelm)
+print Bhor, Bver
 Berd = unc.umath.sqrt((Bver**2)+(Bhor**2))
 print 'B =', Berd/const.micro, 'muT'
 papstats.print_rdiff(Berd/const.micro, unc.ufloat(49,0))

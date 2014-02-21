@@ -1,7 +1,8 @@
 # Plots
 *.png
-*.pdf
-*.BMP
+
+# Resources
+Resources
 
 # Mac
 .DS_Store

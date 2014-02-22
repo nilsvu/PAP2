@@ -12,7 +12,6 @@ import uncertainties as unc
 import uncertainties.unumpy as unp
 import matplotlib.pyplot as plt
 import scipy.constants as const
-import scipy.optimize as opt
 from scipy.special import gamma
 
 import os
@@ -31,10 +30,8 @@ N = data[:,1]
 N = unp.uarray(N, np.sqrt(N))
 
 plt.clf()
-plt.errorbar(unp.nominal_values(U), unp.nominal_values(N), xerr=unp.std_devs(U), yerr=unp.std_devs(N))
-fig = plt.gcf()
-fig.set_size_inches(11.69,8.27)
-plt.savefig('3.1.png', dpi=144)
+papstats.plot_data(U, N)
+papstats.savefig_a4('3.1.png')
 
 #####
 print('\n# 3 (Untersuchung des Plateauanstiegs)')
@@ -49,7 +46,9 @@ N2 = data[:,2]
 N2 = unp.uarray(N2,np.sqrt(N2))
 
 Ndiff = N1-N2
-
+print N1,N2
+papstats.print_rdiff(N1[0],N2[0])
+papstats.print_rdiff(N1[1],N2[1])
 
 #####
 print('\n# 4 (Verifizierung der statistischen Natur des radioaktiven Zerfalls)')
@@ -70,9 +69,7 @@ sl = n > 10 # Häufigkeit mindestens 10
 def fit_gauss(x, m, s, A):
     return A/np.sqrt((s**2)*2*const.pi)*np.exp(-((x-m)**2)/2/(s**2))
 
-popt, pcov = opt.curve_fit(fit_gauss, unp.nominal_values(N[sl]), unp.nominal_values(n[sl]), sigma=unp.std_devs(N[sl]), p0=[57.768, 7.659, 2094])
-popt_gauss = unp.uarray(popt, np.sqrt(np.diagonal(pcov)))
-pstats_gauss = papstats.PAPStats(unp.nominal_values(n[sl]), fit_gauss(unp.nominal_values(N[sl]), *unp.nominal_values(popt_gauss)), sigma=unp.std_devs(N[sl]), ddof=3)
+popt_gauss, pstats_gauss = papstats.curve_fit(fit_gauss, N[sl], n[sl], p0=[57.768, 7.659, 2094])
 print 'Gauss:'
 print popt_gauss
 print pstats_gauss
@@ -82,25 +79,62 @@ print pstats_gauss
 def fit_poisson(x, m, A):
     return A*np.exp(-m)*(m**x)/gamma(x+1)
 
-popt, pcov = opt.curve_fit(fit_poisson, unp.nominal_values(N[sl]), unp.nominal_values(n[sl]), sigma=unp.std_devs(N[sl]), p0=[57.768, 2094])
-popt_poisson = unp.uarray(popt, np.sqrt(np.diagonal(pcov)))
-pstats_poisson = papstats.PAPStats(unp.nominal_values(n[sl]), fit_poisson(unp.nominal_values(N[sl]), *unp.nominal_values(popt_poisson)), sigma=unp.std_devs(N[sl]), ddof=2)
+popt_poisson, pstats_poisson = papstats.curve_fit(fit_poisson, N[sl], n[sl], p0=[57.768, 2094])
 print 'Poisson:'
 print popt_poisson
 print pstats_poisson
 
 # plot
 plt.clf()
-plt.errorbar(unp.nominal_values(N), unp.nominal_values(n), xerr=unp.std_devs(N), ls='none')
-xspace = np.linspace(0, 100, num=200)
-plt.plot(xspace, fit_gauss(xspace, *unp.nominal_values(popt_gauss)))
-plt.plot(xspace, fit_poisson(xspace, *unp.nominal_values(popt_poisson)))
+papstats.plot_data(N, n)
+papstats.plot_fit(fit_gauss, popt_gauss, pstats_gauss, np.linspace(0,100,num=200))
+papstats.plot_fit(fit_poisson, popt_poisson, pstats_poisson, np.linspace(0,100,num=200))
 xrange = 40
 plt.xlim(int(popt_gauss[0].n-xrange),int(popt_gauss[0].n+xrange))
-fig = plt.gcf()
-fig.set_size_inches(11.69,8.27)
-plt.savefig('3.2.png', dpi=144)
+papstats.savefig_a4('3.2.png')
+
+plt.clf()
+plt.hist(fit_gauss(unp.nominal_values(N), *unp.nominal_values(popt_gauss))-n, bins=30)
+plt.hist(pstats_gauss.residue, bins=30)
+plt.hist(pstats_poisson.residue, bins=30)
+papstats.savefig_a4('3.2.b.png')
 
 
+#####
+print('\n# 5 Vergleich der Poisson- und Gauß- Verteilung bei sehr kleinen Zählraten')
+#####
+
+t = 0.1
+
+data = np.loadtxt('5.dat')
+
+N = data[:,0]
+N = unp.uarray(N,np.sqrt(N))
+n = data[:,1]
+
+sl = n > 10 # Häufigkeit mindestens 10
+
+# Gaussverteilung
+
+#popt_gauss, pstats_gauss = papstats.curve_fit(fit_gauss, N[sl], n[sl], p0=[4.134, 2.050, 5246])
+print 'Gauss:'
+print popt_gauss
+print pstats_gauss
+
+# Poissonverteilung
+
+#popt_poisson, pstats_poisson = papstats.curve_fit(fit_poisson, N[sl], n[sl], p0=[4.134, 5246])
+print 'Poisson:'
+print popt_poisson
+print pstats_poisson
+
+# plot
+plt.clf()
+papstats.plot_data(N, n)
+#papstats.plot_fit(fit_gauss, popt_gauss, pstats_gauss, np.linspace(0,100,num=200))
+#papstats.plot_fit(fit_poisson, popt_poisson, pstats_poisson, np.linspace(0,100,num=200))
+xrange = 40
+#plt.xlim(int(popt_gauss[0].n-xrange),int(popt_gauss[0].n+xrange))
+papstats.savefig_a4('3.3.png')
 
 

@@ -27,7 +27,8 @@ def chisquared(ydata, ymodel, sigma=None, ddof=0):
     if sigma is None:
         sigma = 1
     chisq = np.sum(((ydata-ymodel)/sigma)**2)
-    return chisq, chisq/(len(ydata)-ddof)
+    dof = len(ydata)-ddof
+    return chisq, chisq/dof, 1-st.chi2.cdf(chisq, dof)
 
 # Statistics
 
@@ -45,7 +46,7 @@ class PAPStats:
         return str(self)
     
     def legendstring(self):
-        return '$\chi^2=%.2f$, $\chi^2_{red}=%.2f$, $r^2=%.5f$' % (self.chisq[0], self.chisq[1], self.rsquared)
+        return '$\chi^2=%.2f$, $\chi^2_{red}=%.2f$, $p=%.2f' % (self.chisq[0], self.chisq[1], self.chisq[2]*100) + r'\%$'
 
 # Plots
 

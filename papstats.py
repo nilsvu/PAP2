@@ -1,31 +1,42 @@
+# -*- coding: utf-8 -*-
+
 import numpy as np
 import scipy.stats as st
 import scipy.optimize as opt
 import uncertainties as unc
 import uncertainties.unumpy as unp
 import matplotlib.pyplot as plt
-import re
+import inspect
 
 # Fit
 
-def curve_fit(fit, xdata, ydata, p0=None):
-    popt, pcov = opt.curve_fit(fit, unp.nominal_values(xdata), unp.nominal_values(ydata), sigma=unp.std_devs(xdata+ydata), p0=p0)
+def curve_fit(fit, xdata, ydata, sigma=None, p0=None):
+    if sigma is None:
+        # TODO: Nur y-Fehler? chisquared vergleicht nur y-Differenzen, x-Fehler relevant für Fit?
+        sigma = unp.std_devs(ydata)
+        if np.sum(sigma) == 0:
+            sigma = None
+    xdata = unp.nominal_values(xdata)
+    ydata = unp.nominal_values(ydata)
+    popt, pcov = opt.curve_fit(fit, xdata, ydata, sigma=sigma, p0=p0)
     popt = unp.uarray(popt, np.sqrt(np.diagonal(pcov)))
-    pstats = PAPStats(unp.nominal_values(ydata), fit(unp.nominal_values(xdata), *unp.nominal_values(popt)), sigma=unp.std_devs(xdata+ydata), ddof=len(popt))
+    pstats = PAPStats(ydata, fit(xdata, *unp.nominal_values(popt)), sigma=sigma, ddof=len(popt))
     return popt, pstats
 
-def chisquared(ydata, ymodel, sigma=1, ddof=0):
+def chisquared(ydata, ymodel, sigma=None, ddof=0):
+    if sigma is None:
+        sigma = 1
     chisq = np.sum(((ydata-ymodel)/sigma)**2)
-    return chisq, chisq/(ydata.size-ddof)
+    return chisq, chisq/(len(ydata)-ddof)
 
 # Statistics
 
 class PAPStats:
-    def __init__(self, ydata, ymodel, sigma=1, ddof=0):
+    def __init__(self, ydata, ymodel, sigma=None, ddof=0):
         self.chisq = chisquared(ydata, ymodel, sigma, ddof)
         self.pearsonr = st.pearsonr(ydata, ymodel)
         self.rsquared = self.pearsonr[0]**2
-        self.residue = ymodel-ydata
+        self.residual = ymodel-ydata
     
     def __str__(self):
         return "< Chi-Squared: "+str(self.chisq)+", Pearson R: "+str(self.pearsonr)+", R Squared: "+str(self.rsquared)+" >"
@@ -41,20 +52,18 @@ class PAPStats:
 def plot_data(xdata, ydata, **kwargs):
     plt.errorbar(unp.nominal_values(xdata), unp.nominal_values(ydata), xerr=unp.std_devs(xdata), yerr=unp.std_devs(ydata), ls='none', marker='.', **kwargs)
 
-def plot_fit(fit, popt, pstats, xfit, eq=None, **kwargs):
+def plot_fit(fit, popt, pstats, xspace, xscale=1., yscale=1., eq=None, plabels=None, punits=None, **kwargs):
     if eq is None:
         eq = ''
     else:
         eq = '$'+eq+'$ '
-    label = 'Fit '+eq+'mit:'+''.join(['\n$%s$' % pformat(p) for p in popt])+'\n'+pstats.legendstring()
-    plt.plot(xfit, fit(xfit, *unp.nominal_values(popt)), label=label, **kwargs)
-
-def plot(xdata, ydata, fit=None, popt=None, pstats=None, xfit=None, **kwargs):
-    plot_data(xdata, ydata)
-    if fit is not None:
-        if xfit is None:
-            xfit = np.linspace(xdata[0], xdata[-1], num=100)
-        plot_fit(fit, popt, pstats, xfit)
+    if plabels is None:
+        plabels = inspect.getargspec(fit)[0][1:]
+    if punits is None:
+        punits = [None for plabel in plabels]
+    label = 'Fit '+eq+'mit:'+''.join(['\n$%s$' % pformat(popt[i], label=plabels[i], unit=punits[i]) for i in range(len(popt))])+'\n'+pstats.legendstring()
+    ydata = fit(xspace, *unp.nominal_values(popt))
+    plt.plot(xspace*xscale, ydata*yscale, label=label, **kwargs)
 
 def savefig_a4(filename):
     fig = plt.gcf()
@@ -74,6 +83,8 @@ def pformat(v, dv=None, prec=2, label=None, unit=None):
             label += '='
         if unit is None:
             unit = ''
+        else:
+            unit = '\, '+unit
         return label+'{:.2uL}'.format(v)+unit
     
     # format numbers without uncertainties
@@ -105,8 +116,8 @@ def round_ordnung(v, o):
 
 def print_rdiff(r, r_erw):
     d = np.abs(r-r_erw)
-    print 'Berechnung:', r
-    print 'Erwartungswert:', r_erw
+    print 'Berechnung: {:.2u}'.format(r)
+    print 'Erwartungswert: {:.2u}'.format(r_erw)
     print 'Abweichung: {:.2u}'.format(d)
-    print 'rel. Abweichung: {:.2}'.format(d.n/r_erw.n*100)
+    print 'rel. Abweichung: {:.2u}%'.format(d/r_erw*100)
     print 'Sigmabereich: {:.2}'.format(d.n/d.s)

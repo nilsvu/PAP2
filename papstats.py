@@ -73,7 +73,7 @@ def savefig_a4(filename):
 
 # Formatting
 
-def pformat(v, dv=None, prec=2, label=None, unit=None):
+def pformat(v, dv=None, prec=4, label=None, unit=None):
     # use uncertainties module formatting
     if isinstance(v, unc.UFloat):
         if label is None and isinstance(v, unc.Variable):
@@ -105,8 +105,13 @@ def pformat(v, dv=None, prec=2, label=None, unit=None):
         e = np.floor(np.log10(v))
         o = 10**(e-prec+1)
         v = round_ordnung(v, o)
-        string = r"%s%."+str(prec-1)+"f*10^{%d}%s"
-        return string % (label, v/10.0**e, e,  unit)
+        if np.abs(e) > prec:
+            string = r"%s%."+str(prec-1)+"f \times 10^{%d}%s"
+            string = string % (label, v/10.0**e, e,  unit)
+        else:
+            string = r"%s%." + str(prec) + "g%s"
+            string = string % (label, v, unit)
+        return string
 
 def round_ordnung(v, o):
     return np.round(v / o) * o

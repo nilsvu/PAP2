@@ -100,12 +100,12 @@ def pformat(v, dv=None, prec=2, label=None, unit=None):
         o = 10**(e-prec+1)
         v = round_ordnung(v, o)
         dv = round_ordnung(dv, o)
-        return (ur"$%s(%."+str(prec-1)+"f\pm%."+str(prec-1)+"f)*10^{%d}%s$") % (label, v / 10**e, dv / 10**e, e, unit)
+        return (ur"%s(%."+str(prec-1)+"f\pm%."+str(prec-1)+"f)*10^{%d}%s") % (label, v / 10**e, dv / 10**e, e, unit)
     else:
         e = np.floor(np.log10(v))
         o = 10**(e-prec+1)
         v = round_ordnung(v, o)
-        string = r"$%s%."+str(prec-1)+"f*10^{%d}%s$"
+        string = r"%s%."+str(prec-1)+"f*10^{%d}%s"
         return string % (label, v/10.0**e, e,  unit)
 
 def round_ordnung(v, o):

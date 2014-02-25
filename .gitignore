@@ -47,3 +47,5 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+.idea

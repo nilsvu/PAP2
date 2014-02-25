@@ -84,7 +84,7 @@ def pformat(v, dv=None, prec=2, label=None, unit=None):
             label += '='
         if unit is None:
             unit = ''
-        return label+'{:.2uL}'.format(v)+unit
+        return label+('{:.'+str(prec)+'uL}').format(v)+unit
     
     # format numbers without uncertainties
 
@@ -96,13 +96,13 @@ def pformat(v, dv=None, prec=2, label=None, unit=None):
         label += '='
 
     if dv is not None:
-        e = np.floor(np.log10(zahl))
+        e = np.floor(np.log10(v))
         o = 10**(e-prec+1)
         v = round_ordnung(v, o)
         dv = round_ordnung(dv, o)
-        return (r"$%s(%."+str(prec-1)+"f\pm%."+str(prec-1)+"f)*10^{%d}%s$") % (label, v / 10**e, dv / 10**e, e, unit)
+        return (ur"$%s(%."+str(prec-1)+"f\pm%."+str(prec-1)+"f)*10^{%d}%s$") % (label, v / 10**e, dv / 10**e, e, unit)
     else:
-        e = get_e(v)
+        e = np.floor(np.log10(v))
         o = 10**(e-prec+1)
         v = round_ordnung(v, o)
         string = r"$%s%."+str(prec-1)+"f*10^{%d}%s$"

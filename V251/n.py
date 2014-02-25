@@ -19,28 +19,6 @@ parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.sys.path.insert(0,parentdir)
 import papstats
 
-if False:
-    ydata, xdata = np.histogram(np.random.normal(10,2,size=10000), bins=1000)
-    xdata = xdata[:-1]+np.diff(xdata)/2
-    xdata = xdata[ydata>0]
-    ydata = unp.uarray(ydata, np.sqrt(ydata))
-    ydata = ydata[ydata>0]
-
-    def fit_gauss(x, m, s, A):
-        return A/np.sqrt((s**2)*2*const.pi)*np.exp(-((x-m)**2)/2./(s**2))
-
-    popt, pstats = papstats.curve_fit(fit_gauss, xdata, ydata)
-
-    plt.clf()
-    papstats.plot_data(xdata, ydata)
-    papstats.plot_fit(fit_gauss, popt, pstats, np.linspace(0,20))
-    plt.legend()
-    papstats.savefig_a4('0.png')
-
-    import sys
-    sys.exit()
-
-
 
 #####
 print('# 1 (Plateaubereich des Zählrohrs)')
@@ -98,7 +76,7 @@ print T/(60*24)
 
 
 #####
-print('\n# 4 (Verifizierung der statistischen Natur des radioaktiven Zerfalls)')
+print('\n# 3 (Verifizierung der statistischen Natur des radioaktiven Zerfalls)')
 #####
 
 # Gaussverteilung
@@ -157,7 +135,6 @@ def compare_gauss_poisson(t, data, p0, title, filename, xlim, ylim):
 compare_gauss_poisson(t=0.5, data=np.loadtxt('4.dat'), p0=[57.768,7.659,2094], title=u'Vergleich der Poisson- und Gauß-Verteilung bei großen Zählraten', filename='3.2', xlim=[60,200,60,180], ylim=[-10,130,1e-1,1.5e2])
 
 compare_gauss_poisson(t=0.1, data=np.loadtxt('5.dat'), p0=[4.134,2.050,5246], title=u'Vergleich der Poisson- und Gauß-Verteilung bei kleinen Zählraten', filename='3.3', xlim=[-10,140,-5,140], ylim=[-100,1100,1e-2,1.5e3])
-
 
 
 

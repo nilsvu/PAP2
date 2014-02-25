@@ -69,6 +69,8 @@ papstats.plot_fit(fit_platlin, popt_lin, pstats_lin, np.linspace(U[1].n, U[-1].n
 papstats.plot_fit(fit_platlin, popt_lin2, pstats_lin2, np.linspace(U[8].n, U[-1].n), eq='N=c*U_Z+N_0, \, U_Z \in [600,700]V', lw=2)
 plt.xlabel(u'Zählrohrspannung '+r'$U_Z \, [V]$')
 plt.ylabel(u'Zählrate '+r'$\frac{N}{t} \, [\frac{Ereignisse}{s}]$')
+plt.xlim(430,720)
+plt.ylim(10,65)
 plt.legend(loc='lower right')
 papstats.savefig_a4('3.1.png')
 
@@ -113,16 +115,16 @@ def fit_poisson(x, m, A):
 def compare_gauss_poisson(t, data, p0, title, filename, xlim, ylim):
 
     N = data[:,0]
-    N = unp.uarray(N,np.sqrt(N))
     n = data[:,1]
+    n = unp.uarray(n,np.sqrt(n))
 
-    sl = (n >= 10) & (unp.std_devs(N) > 0) # TODO: Häufigkeit n mindestens 10 ??
+    sl = (n >= 10) # TODO: Häufigkeit n mindestens 10
 
     # Fit
 
-    popt_gauss, pstats_gauss = papstats.curve_fit(fit_gauss, N[sl], n[sl], p0=p0, sigma=unp.std_devs(N[sl]))
+    popt_gauss, pstats_gauss = papstats.curve_fit(fit_gauss, N[sl], n[sl], p0=p0, sigma=unp.std_devs(n[sl]))
 
-    popt_poisson, pstats_poisson = papstats.curve_fit(fit_poisson, N[sl], n[sl], p0=[p0[0],p0[2]], sigma=unp.std_devs(N[sl]))
+    popt_poisson, pstats_poisson = papstats.curve_fit(fit_poisson, N[sl], n[sl], p0=[p0[0],p0[2]], sigma=unp.std_devs(n[sl]))
 
     # Plot
     
@@ -154,7 +156,7 @@ def compare_gauss_poisson(t, data, p0, title, filename, xlim, ylim):
 
 compare_gauss_poisson(t=0.5, data=np.loadtxt('4.dat'), p0=[57.768,7.659,2094], title=u'Vergleich der Poisson- und Gauß-Verteilung bei großen Zählraten', filename='3.2', xlim=[60,200,60,180], ylim=[-10,130,1e-1,1.5e2])
 
-compare_gauss_poisson(t=0.1, data=np.loadtxt('5.dat'), p0=[4.134,2.050,5246], title=u'Vergleich der Poisson- und Gauß-Verteilung bei kleinen Zählraten', filename='3.3', xlim=[-10,140,-5,140], ylim=[-100,1100,-100,1100])
+compare_gauss_poisson(t=0.1, data=np.loadtxt('5.dat'), p0=[4.134,2.050,5246], title=u'Vergleich der Poisson- und Gauß-Verteilung bei kleinen Zählraten', filename='3.3', xlim=[-10,140,-5,140], ylim=[-100,1100,1e-2,1.5e3])
 
 
 

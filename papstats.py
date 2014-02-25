@@ -84,8 +84,6 @@ def pformat(v, dv=None, prec=2, label=None, unit=None):
             label += '='
         if unit is None:
             unit = ''
-        else:
-            unit = '\, '+unit
         return label+'{:.2uL}'.format(v)+unit
     
     # format numbers without uncertainties

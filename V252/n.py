@@ -28,10 +28,11 @@ data = np.loadtxt('1.dat')
 
 N = data[:,1]
 
-N_U_table = pt.PrettyTable()
-N_U_table.add_column('t [s]', np.arange(len(N))*10+5)
-N_U_table.add_column('N', N)
-print N_U_table
+table = pt.PrettyTable()
+table.add_column('t [s]', np.arange(len(N))*10+5, align='r')
+table.add_column('N', N.astype(int), align='r')
+with open("Resources/table_N_U.txt", "w") as text_file:
+    text_file.write(table.get_string())
 
 N_U0 = unc.ufloat(np.mean(N),np.std(N)/np.sqrt(len(N)))/10.
 print N_U0
@@ -60,14 +61,16 @@ def compute_hwz(N_list, ttor, fit, plotname, title, sl=slice(None,None), Uscale=
     t = np.arange(len(N))*ttor+ttor/2.
 
     table = pt.PrettyTable()
-    table.add_column('t [s]', t)
+    table.add_column('t [s]', t.astype(int), align='r')
     if len(N_list) > 1:
         for i in range(len(N_list)):
-            table.add_column('N'+str(i+1), N_list[i])
-        table.add_column('Summe', N)
+            table.add_column('N'+str(i+1), N_list[i].astype(int), align='r')
+        table.add_column('Summe', N, align='r')
     else:
-        table.add_column('N', N)
-    print table
+        table.add_column('N', N, align='r')
+    with open("Resources/table_"+plotname+".txt", "w") as text_file:
+        text_file.write(table.get_string())
+
 
     global N_U
     N_U = N_U0*Uscale*ttor
@@ -99,9 +102,10 @@ def compute_hwz(N_list, ttor, fit, plotname, title, sl=slice(None,None), Uscale=
     plt.fill_between(xspace, fit(xspace, *unp.nominal_values(popt_min)), fit(xspace, *unp.nominal_values(popt_max)), color='g', alpha=0.2)
     Nmin = np.amin(unp.nominal_values(N))
     for i in range(len(Th)):
-        plt.hlines(Nmin*(1-(i+1)*0.1), 0, Th[i].n, lw=2, label='Halbwertszeit $'+papstats.pformat(Th[i], label=r'T_{\frac{1}{2}}^'+str(i+1), unit='s')+'$')
+        #Nmin*(1-(i+1)*0.1)
+        plt.hlines(popt[1::2][i].n/2.+N_U.n, 0, Th[i].n, lw=2, label='Halbwertszeit $'+papstats.pformat(Th[i], label=r'T_{\frac{1}{2}}'+('^'+str(i+1) if len(Th)>1 else ''), unit='s')+'$')
     handles, labels = plt.gca().get_legend_handles_labels()
-    p = plt.Rectangle((0, 0), 1, 1, fc='g', alpha=0.2)
+    p = plt.Rectangle((0, 0), 1, 1, color='g', alpha=0.2)
     handles.append(p)
     labels.append('Fit im '+r'$1 \sigma$'+'-Bereich von $N_U$:'+''.join(['\n$'+papstats.pformat(s_U[i], label='\Delta '+plabels[i]+'^{U}', unit=punits[i])+'$' for i in range(len(plabels))]))
     plt.legend(handles, labels)

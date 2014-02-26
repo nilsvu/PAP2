@@ -78,7 +78,7 @@ def plot_fit(fit, popt, pstats, xspace, xscale=1., yscale=1., eq=None, plabels=N
 def savefig_a4(filename):
     fig = plt.gcf()
     fig.set_size_inches(11.69, 8.27)
-    plt.savefig(filename, dpi=144)
+    plt.savefig(filename, dpi=150)
 
 
 # Formatting

@@ -102,7 +102,6 @@ def compute_hwz(N_list, ttor, fit, plotname, title, sl=slice(None,None), Uscale=
     plt.fill_between(xspace, fit(xspace, *unp.nominal_values(popt_min)), fit(xspace, *unp.nominal_values(popt_max)), color='g', alpha=0.2)
     Nmin = np.amin(unp.nominal_values(N))
     for i in range(len(Th)):
-        #Nmin*(1-(i+1)*0.1)
         plt.hlines(popt[1::2][i].n/2.+N_U.n, 0, Th[i].n, lw=2, label='Halbwertszeit $'+papstats.pformat(Th[i], label=r'T_{\frac{1}{2}}'+('^'+str(i+1) if len(Th)>1 else ''), unit='s')+'$')
     handles, labels = plt.gca().get_legend_handles_labels()
     p = plt.Rectangle((0, 0), 1, 1, color='g', alpha=0.2)

@@ -172,7 +172,6 @@ def vergleiche_aktivitaet(A, filename, e_soll=None, k=None, index=None):
         if e_soll is not None:
             row.append(e_soll[i])
         table.add_row(row)
-    print table
     with open('Resources/'+filename+'.txt', 'w') as file:
         file.write(table.get_string())
 

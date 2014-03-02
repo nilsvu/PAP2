@@ -69,8 +69,7 @@ def plot_fit(fit, popt, pstats, xspace, xscale=1., yscale=1., eq=None, plabels=N
         plabels = inspect.getargspec(fit)[0][1:]
     if punits is None:
         punits = [None for plabel in plabels]
-    label = 'Fit ' + eq + 'mit:' + ''.join(['\n$%s$' % pformat(popt[i], label=plabels[i], unit=punits[i]) for i in
-                                            range(len(popt))]) + '\n' + pstats.legendstring()
+    label = 'Fit ' + eq + 'mit:' + ''.join(['\n$%s$' % pformat(popt[i], label=plabels[i], unit=punits[i]) for i in range(len(popt))]) + '\n' + pstats.legendstring()
     ydata = fit(xspace, *unp.nominal_values(popt))
     plt.plot(xspace * xscale, ydata * yscale, label=label, **kwargs)
 
@@ -83,7 +82,7 @@ def savefig_a4(filename):
 
 # Formatting
 
-def pformat(v, dv=None, prec=2, label=None, unit=None):
+def pformat(v, dv=None, prec=2, label=None, unit=None, format=None):
     # use uncertainties module formatting
     if isinstance(v, unc.UFloat):
         if label is None and isinstance(v, unc.Variable):
@@ -94,7 +93,9 @@ def pformat(v, dv=None, prec=2, label=None, unit=None):
             label += '='
         if unit is None:
             unit = ''
-        return label + ('{:.' + str(prec) + 'uL}').format(v) + unit
+        if format is None:
+            format = '.' + str(prec) + 'uL'
+        return label + ('{:' + format + '}').format(v) + unit
 
     # format numbers without uncertainties
 
@@ -117,7 +118,7 @@ def pformat(v, dv=None, prec=2, label=None, unit=None):
         o = 10 ** (e - prec + 1)
         v = round_ordnung(v, o)
         if np.abs(e) > prec:
-            string = r"%s%." + str(prec - 1) + "f \times 10^{%d}%s"
+            string = r"%s%." + str(prec - 1) + r"f \times 10^{%d}%s"
             string = string % (label, v / 10.0 ** e, e, unit)
         else:
             string = r"%s%." + str(prec) + "g%s"
@@ -131,10 +132,14 @@ def round_ordnung(v, o):
 
 # Calculations
 
-def print_rdiff(r, r_erw):
+def rdiff(r, r_erw):
     d = np.abs(r - r_erw)
+    return d, d / r_erw, d.n / d.s
+
+def print_rdiff(r, r_erw):
+    d, drel, s = rdiff(r, r_erw)
     print 'Berechnung: {:.2u}'.format(r)
     print 'Erwartungswert: {:.2u}'.format(r_erw)
     print 'Abweichung: {:.2u}'.format(d)
-    print 'rel. Abweichung: {:.2u}%'.format(d / r_erw * 100)
-    print 'Sigmabereich: {:.2}'.format(d.n / d.s)
+    print 'rel. Abweichung: {:.2u}%'.format(drel * 100)
+    print 'Sigmabereich: {:.2}'.format(s)

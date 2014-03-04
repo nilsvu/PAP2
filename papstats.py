@@ -60,18 +60,20 @@ def plot_data(xdata, ydata, **kwargs):
                  yerr=unp.std_devs(ydata), ls='none', marker='.', **kwargs)
 
 
-def plot_fit(fit, popt, pstats, xspace, xscale=1., yscale=1., eq=None, plabels=None, punits=None, **kwargs):
+def plot_fit(fit, popt, pstats=None, xspace=np.linspace(0, 1), xscale=1., yscale=1., eq=None, plabels=None, punits=None, **kwargs):
     if eq is None:
         eq = ''
     else:
-        eq = '$' + eq + '$ '
+        if eq.find('$') == -1:
+            eq = '$' + eq + '$ '
     if plabels is None:
         plabels = inspect.getargspec(fit)[0][1:]
     if punits is None:
         punits = [None for plabel in plabels]
-    label = 'Fit ' + eq + 'mit:' + ''.join(['\n$%s$' % pformat(popt[i], label=plabels[i], unit=punits[i]) for i in range(len(popt))]) + '\n' + pstats.legendstring()
+    if not kwargs.has_key('label'):
+        kwargs['label'] = 'Fit ' + eq + 'mit:' + ''.join(['\n$%s$' % pformat(popt[i], label=plabels[i], unit=punits[i]) for i in range(len(popt))]) + ('\n' + pstats.legendstring() if pstats is not None else '')
     ydata = fit(xspace, *unp.nominal_values(popt))
-    plt.plot(xspace * xscale, ydata * yscale, label=label, **kwargs)
+    plt.plot(xspace * xscale, ydata * yscale, **kwargs)
 
 
 def savefig_a4(filename):
@@ -139,7 +141,7 @@ def rdiff(r, r_erw):
 def print_rdiff(r, r_erw):
     d, drel, s = rdiff(r, r_erw)
     print 'Berechnung: {:.2u}'.format(r)
-    print 'Erwartungswert: {:.2u}'.format(r_erw)
+    print ('Erwartungswert: {:.2' + ('u' if isinstance(r_erw, unc.UFloat) else 'f') + '}').format(r_erw)
     print 'Abweichung: {:.2u}'.format(d)
     print 'rel. Abweichung: {:.2u}%'.format(drel * 100)
     print 'Sigmabereich: {:.2}'.format(s)

@@ -56,8 +56,7 @@ class PAPStats:
 # Plots
 
 def plot_data(xdata, ydata, **kwargs):
-    plt.errorbar(unp.nominal_values(xdata), unp.nominal_values(ydata), xerr=unp.std_devs(xdata),
-                 yerr=unp.std_devs(ydata), ls='none', marker='.', **kwargs)
+    return plt.errorbar(unp.nominal_values(xdata), unp.nominal_values(ydata), xerr=unp.std_devs(xdata), yerr=unp.std_devs(ydata), ls='none', marker='.', **kwargs)
 
 
 def plot_fit(fit, popt, pstats=None, xspace=np.linspace(0, 1), xscale=1., yscale=1., eq=None, plabels=None, punits=None, **kwargs):
@@ -73,7 +72,7 @@ def plot_fit(fit, popt, pstats=None, xspace=np.linspace(0, 1), xscale=1., yscale
     if not kwargs.has_key('label'):
         kwargs['label'] = 'Fit ' + eq + 'mit:' + ''.join(['\n$%s$' % pformat(popt[i], label=plabels[i], unit=punits[i]) for i in range(len(popt))]) + ('\n' + pstats.legendstring() if pstats is not None else '')
     ydata = fit(xspace, *unp.nominal_values(popt))
-    plt.plot(xspace * xscale, ydata * yscale, **kwargs)
+    return plt.plot(xspace * xscale, ydata * yscale, **kwargs)
 
 
 def savefig_a4(filename):

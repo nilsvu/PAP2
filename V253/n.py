@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 '''
-Auswertung des Versuchs 252 - Aktivierung von Indium und von Silber mit thermischen Neutronen
+Auswertung des Versuchs 253 - Absorption von a-, b- und y-Strahlung
 Physikalisches Anfängerpraktikum II, Universität Heidelberg
 
 Author: Nils Fischer

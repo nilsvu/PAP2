@@ -55,8 +55,14 @@ class PAPStats:
 
 # Plots
 
-def plot_data(xdata, ydata, **kwargs):
-    return plt.errorbar(unp.nominal_values(xdata), unp.nominal_values(ydata), xerr=unp.std_devs(xdata), yerr=unp.std_devs(ydata), ls='none', marker='.', **kwargs)
+def plot_data(xdata, ydata, ax=plt, **kwargs):
+    xerr = unp.std_devs(xdata)
+    if np.sum(xerr)==0:
+        xerr = None
+    yerr = unp.std_devs(ydata)
+    if np.sum(yerr)==0:
+        yerr = None
+    return ax.errorbar(unp.nominal_values(xdata), unp.nominal_values(ydata), xerr=xerr, yerr=yerr, ls='none', marker='.', **kwargs)
 
 
 def plot_fit(fit, popt, pstats=None, xspace=np.linspace(0, 1), xscale=1., yscale=1., eq=None, plabels=None, punits=None, **kwargs):
@@ -133,9 +139,11 @@ def round_ordnung(v, o):
 
 # Calculations
 
-def rdiff(r, r_erw):
+def rdiff(r, r_erw=0):
     d = np.abs(r - r_erw)
-    return d, d / r_erw, d.n / d.s
+    if not isinstance(r_erw, unc.UFloat):
+        r_erw = unc.ufloat(r_erw, 0)
+    return d, (d / (r_erw if r_erw.n!=0 else r) if np.abs(r_erw.n)+np.abs(r.n)!=0 else None) , d.n / d.s
 
 def print_rdiff(r, r_erw):
     d, drel, s = rdiff(r, r_erw)

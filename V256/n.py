@@ -27,7 +27,7 @@ import papstats
 
 Ry = 13.6*const.eV
 
-elements = [('Fe', 26), ('Mo', 42), ('Zr', 40), ('Zn', 30), ('Cu', 29), ('Ni', 28), ('Ti', 22)]
+elements = [('Fe', 26), ('Mo', 42), ('Zr', 40), ('Zn', 30), ('Cu', 29), ('Ni', 28), ('Ag', 47), ('Ti', 22)]
 legierungen = ['L1', 'L2', 'L3', 'L5']
 
 #####
@@ -48,14 +48,22 @@ if False:
 
 
 #####
-# Messdaten anzeigen
+# Kombiniertes Spektrum
 #####
 
+data = np.array([np.loadtxt('data/'+e[0]+'.txt', skiprows=1) for e in elements], dtype=object)
+data[:,:,1] = unp.uarray(data[:,:,1], data[:,:,1]/np.sqrt(180))
+
 plt.clf()
-data = np.array([np.loadtxt('data/'+e[0]+'.txt', skiprows=1) for e in elements])
+plt.title(u'Diagramm 3.1: Röntgenfluoreszenzspektrum verschiedener Elemente')
+plt.xlabel('Strahlungsenergie $E \, [keV]$')
+plt.ylabel(u'Zählrate '+r'$n \, [\frac{Ereignisse}{s}]$')
 for i in range(data.shape[0]):
-    p = papstats.plot_data(data[i,:,0], data[i,:,1], label=elements[i][0])
-    plt.fill_between(data[i,:,0], 0, data[i,:,1], color=p[0].get_color(), alpha=0.1)
+    p = papstats.plot_data(data[i,:,0], data[i,:,1], label=elements[i][0], elinewidth=0.5, capsize=4)
+    plt.fill_between(data[i,:,0], 0, unp.nominal_values(data[i,:,1]), color=p[0].get_color(), alpha=0.1)
+#plt.xlim(np.min(data[:,:,0]), np.max(data[:,:,0]))
+#plt.ylim(np.min(unp.nominal_values(data[:,:,1])), np.max(unp.nominal_values(data[:,:,1])))
+plt.xlim(0, 26)
 plt.legend()
 papstats.savefig_a4('3.1.png')
 
@@ -64,41 +72,85 @@ papstats.savefig_a4('3.1.png')
 # Spektrallinien
 #####
 
+Z = np.array([e[1] for e in elements])
+
 converters = dict.fromkeys(range(1, 4), unc.ufloat_fromstr)
-data = np.loadtxt('elements.txt', skiprows=1, usecols=range(1, 3), converters=converters, dtype=object)
-elements = np.genfromtxt('elements.txt', dtype='str', usecols=range(1), skiprows=1)
+E = np.loadtxt('elements.txt', skiprows=1, usecols=range(1, 3), converters=converters, dtype=object)*const.kilo*const.eV
 
-Z = np.array(data[:,0], dtype=int)
-E = data[:,1:]*const.kilo*const.eV
+# Abschirmungskonstante
 ERy = unp.sqrt(E/Ry)
-
 n1 = 1
 n2 = np.array([2., 3.])
+s = Z[:, np.newaxis]-ERy/np.sqrt(n1**(-2)-n2**(-2))
 
-s = np.transpose(Z-np.transpose(ERy/np.sqrt(n1**(-2)-n2**(-2))))
-
+# Table output
 table = pt.PrettyTable()
 table.add_column('Elemente', elements)
 for k in range(np.shape(E)[1]):
     table.add_column('E'+str(k+1), E[:,k])
     table.add_column('(E'+str(k+1)+'/Ry)^1/2', ERy[:,k])
     table.add_column('sigma'+str(k+1), s[:,k])
-print table
+#print table
 
+# Plot
 plt.clf()
+plt.suptitle(u'Diagramm 3.2: Überprüfung des Moseley\'schen Gesetzes')
+import matplotlib.gridspec as gridspec
+gs = gridspec.GridSpec(2, 1, height_ratios=[2, 1])
+gs.update(hspace=0.1)
 xspace = np.linspace(20, 50)
+ax1 = plt.subplot(gs[0])
+ax1.set_ylabel(r'$\sqrt{\frac{E}{R_Y}}$')
+ax1.set_xlim(20,50)
+ax2 = plt.subplot(gs[1], sharex=ax1)
+plt.setp(ax1.get_xticklabels(), visible=False)
+ax2.set_xlabel('Ordnungszahl $Z$')
+ax2.set_ylabel(u'Abschirmungskonstante $\sigma$')
+ax3 = ax1.twiny()
+ax3.set_xlim(20,50)
+ax3.set_xticks(np.sort(Z))
+ax3.set_xticklabels(np.array(elements)[:,0][np.argsort(Z)])
 for k in range(np.shape(E)[1]):
-    papstats.plot_data(Z, unp.nominal_values(ERy[:,k]))
-    plt.plot(xspace, moseley(xspace, s=k+1, n1=1, n2=k+2), ls='dotted')
+    l = 'K_'+[r'\alpha', r'\beta'][k]
+    p = papstats.plot_data(Z, ERy[:,k], label='$'+l+'$ Messpunkte', ax=ax1)
+    ax1.plot(xspace, moseley(xspace, s=k+1, n1=1, n2=k+2), ls='dotted', label='$'+l+'$ nach Moseley\'schem Gesetz', color=p[0].get_color())
+    papstats.plot_data(Z, s[:,k], ax=ax2, color=p[0].get_color())
+    ax2.axhline(k+1, color=p[0].get_color())
+    ax2.fill_between(np.sort(Z), k+1, unp.nominal_values(s[:,k])[np.argsort(Z)], alpha=0.15, color=p[0].get_color())
+ax1.set_ylim(None, 45)
+#ax2.set_ylim(0.3, 2.3)
+ax1.legend(loc='lower right')
 papstats.savefig_a4('3.2.png')
 
-plt.clf()
-for k in range(np.shape(E)[1]):
-    papstats.plot_data(Z, unp.nominal_values(s[:,k]))
-    plt.axhline(k+1)
-plt.ylim(0, 3)
-papstats.savefig_a4('3.2.png')
+
+#####
+# Legierungen
+#####
+
+converters = dict.fromkeys(range(1), unc.ufloat_fromstr)
+data = np.array([np.loadtxt('legierungen/'+l+'.txt', converters=converters, dtype=object) for l in legierungen])*const.kilo*const.eV
+for i in range(data.shape[0]):
+    E_L = data[i]
+    table = pt.PrettyTable()
+    table.add_column(u'Mögliche Legierung '+legierungen[i]+':', ['Abweichung [keV]', 'Sigma'])
+    containing_elements = []
+    for j in range(E.shape[0]):
+        diffs = np.abs([E[j] - E_l for E_l in E_L])/const.kilo/const.eV
+        argmin = np.argmin(diffs)
+        diff_min = diffs.flatten()[argmin]
+        sigma = diff_min.n/diff_min.s
+        if sigma <=1:
+            containing_elements.append((j, sigma))
+            table.add_column(elements[j][0],  np.array(papstats.rdiff(diff_min))[[0,2]])
+
+#    print "Mögliche Legierung:", " + ".join([elements[e[0]][0]+" ("+str(e[1])+")" for e in containing_elements])
+    print table
 
 
-converters = dict.fromkeys(range(3), unc.ufloat_fromstr)
-print np.loadtxt('legierungen.txt', converters=converters)
+
+
+
+
+
+
+

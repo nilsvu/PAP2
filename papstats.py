@@ -6,6 +6,7 @@ import scipy.optimize as opt
 import uncertainties as unc
 import uncertainties.unumpy as unp
 import matplotlib.pyplot as plt
+import prettytable as pt
 import inspect
 
 # Fit
@@ -62,7 +63,11 @@ def plot_data(xdata, ydata, ax=plt, **kwargs):
     yerr = unp.std_devs(ydata)
     if np.sum(yerr)==0:
         yerr = None
-    return ax.errorbar(unp.nominal_values(xdata), unp.nominal_values(ydata), xerr=xerr, yerr=yerr, ls='none', marker='.', **kwargs)
+    if not (kwargs.has_key('ls') or kwargs.has_key('linestyle')):
+        kwargs['ls'] = 'none'
+    if not kwargs.has_key('marker'):
+        kwargs['marker'] = '.'
+    return ax.errorbar(unp.nominal_values(xdata), unp.nominal_values(ydata), xerr=xerr, yerr=yerr, **kwargs)
 
 
 def plot_fit(fit, popt, pstats=None, xspace=np.linspace(0, 1), xscale=1., yscale=1., eq=None, plabels=None, punits=None, **kwargs):
@@ -87,9 +92,36 @@ def savefig_a4(filename):
     plt.savefig(filename, dpi=150)
 
 
+# (Pretty)Tables
+
+def table(labels=None, units=None, columns=None, filename=None):
+    table = pt.PrettyTable()
+    for i in range(len(columns)):
+        try:
+            label = labels[i]
+        except TypeError:
+            label = None
+        try:
+            unit = units[i]
+        except TypeError:
+            unit = None
+        if label is not None and unit is not None:
+            label += ' ['+unit+']'
+        table.add_column(label, pformat(columns[i], format='p'))
+    if filename is not None:
+        with open(filename, 'w') as file:
+            file.write(table.get_string())
+    return table
+
+
 # Formatting
 
 def pformat(v, dv=None, prec=2, label=None, unit=None, format=None):
+    try:
+        return np.array([pformat(vi, dv=dv, prec=prec, label=label, unit=unit, format=format) for vi in v])
+    except TypeError:
+        pass
+    
     # use uncertainties module formatting
     if isinstance(v, unc.UFloat):
         if label is None and isinstance(v, unc.Variable):
@@ -100,9 +132,11 @@ def pformat(v, dv=None, prec=2, label=None, unit=None, format=None):
             label += '='
         if unit is None:
             unit = ''
-        if format is None:
+        if format is None or format=='l' or format=='latex':
             format = '.' + str(prec) + 'uL'
-        return label + ('{:' + format + '}').format(v) + unit
+        elif format=='c' or format=='console' or format=='p' or format=='pretty':
+            format = '.' + str(prec) + 'uP'
+        return label + (u'{:' + format + u'}').format(v) + unit
 
     # format numbers without uncertainties
 
@@ -118,8 +152,7 @@ def pformat(v, dv=None, prec=2, label=None, unit=None, format=None):
         o = 10 ** (e - prec + 1)
         v = round_ordnung(v, o)
         dv = round_ordnung(dv, o)
-        return (ur"%s(%." + str(prec - 1) + "f\pm%." + str(prec - 1) + "f)*10^{%d}%s") % (
-        label, v / 10 ** e, dv / 10 ** e, e, unit)
+        return (ur"%s(%." + str(prec - 1) + "f\pm%." + str(prec - 1) + "f)*10^{%d}%s") % (label, v / 10 ** e, dv / 10 ** e, e, unit)
     else:
         e = np.floor(np.log10(v))
         o = 10 ** (e - prec + 1)
@@ -132,7 +165,6 @@ def pformat(v, dv=None, prec=2, label=None, unit=None, format=None):
             string = string % (label, v, unit)
         return string
 
-
 def round_ordnung(v, o):
     return np.round(v / o) * o
 
@@ -141,9 +173,10 @@ def round_ordnung(v, o):
 
 def rdiff(r, r_erw=0):
     d = np.abs(r - r_erw)
-    if not isinstance(r_erw, unc.UFloat):
-        r_erw = unc.ufloat(r_erw, 0)
-    return d, (d / (r_erw if r_erw.n!=0 else r) if np.abs(r_erw.n)+np.abs(r.n)!=0 else None) , d.n / d.s
+#    if not isinstance(r_erw, unc.UFloat):
+#        r_erw = unc.ufloat(r_erw, 0)
+#    return d, (d / (r_erw if r_erw.n!=0 else r) if np.abs(r_erw.n)+np.abs(r.n)!=0 else None) , d.n / d.s
+    return d, d / r_erw, unp.nominal_values(d) / unp.std_devs(d)
 
 def print_rdiff(r, r_erw):
     d, drel, s = rdiff(r, r_erw)

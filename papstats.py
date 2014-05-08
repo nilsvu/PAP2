@@ -116,12 +116,12 @@ def table(labels=None, units=None, columns=None, filename=None):
 
 # Formatting
 
-def pformat(v, dv=None, prec=2, label=None, unit=None, format=None):
+def pformat(v, dv=None, prec=2, label=None, unit=None, format=None, tex=False):
     try:
         return np.array([pformat(vi, dv=dv, prec=prec, label=label, unit=unit, format=format) for vi in v])
     except TypeError:
         pass
-    
+
     # use uncertainties module formatting
     if isinstance(v, unc.UFloat):
         if label is None and isinstance(v, unc.Variable):
@@ -147,16 +147,13 @@ def pformat(v, dv=None, prec=2, label=None, unit=None, format=None):
     else:
         label += '='
 
+    e = np.floor(np.log10(np.abs(v)))
+    o = 10 ** (e - prec + 1)
+    v = round_ordnung(v, o)
     if dv is not None:
-        e = np.floor(np.log10(v))
-        o = 10 ** (e - prec + 1)
-        v = round_ordnung(v, o)
         dv = round_ordnung(dv, o)
         return (ur"%s(%." + str(prec - 1) + "f\pm%." + str(prec - 1) + "f)*10^{%d}%s") % (label, v / 10 ** e, dv / 10 ** e, e, unit)
     else:
-        e = np.floor(np.log10(v))
-        o = 10 ** (e - prec + 1)
-        v = round_ordnung(v, o)
         if np.abs(e) > prec:
             string = r"%s%." + str(prec - 1) + r"f \times 10^{%d}%s"
             string = string % (label, v / 10.0 ** e, e, unit)

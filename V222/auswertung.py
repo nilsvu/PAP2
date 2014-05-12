@@ -9,6 +9,7 @@ Author: Nils Fischer
 
 import numpy as np
 import scipy.constants as const
+import matplotlib.pyplot as plt
 import uncertainties as unc
 import uncertainties.unumpy as unp
 
@@ -94,4 +95,30 @@ print papstats.pformat(eta, format='c', label='eta')
 Q_V = Q_el - Q_ab - Q_pV
 print papstats.pformat(Q_V, format='c', unit='J', label=u'Motorverluste Q_V')
 
-# TODO: Drehmomentmessung
+
+# Drehmomentmessung
+
+F = unp.uarray([0.2, 0.4, 0.6, 0.8], 0.02)
+W_pV = np.array([[28832, 28393, 28432], [29848, 29640, 29525], [31140, 30857, 30474], [29626, 29808, 30999]]) * 1e-4
+W_pV = unp.uarray(np.mean(W_pV, axis=1), np.std(W_pV, axis=1))
+f = np.array([[304.5, 303.1, 303.4], [271.4, 270.3, 269.9], [233.3, 238.4, 230.5], [170.2, 185.5, 183.3]]) / const.minute
+f = unp.uarray(np.mean(f, axis=1), np.sqrt(np.std(f, axis=1)**2 + (2 / const.minute)**2))
+Q_el = unc.ufloat(13.21, 0.01) * unc.ufloat(2.9, 0.01) * 5 / f
+eta_th = W_pV / Q_el
+W_D = 2 * const.pi * 0.25 * F
+eta_eff = W_D / Q_el
+
+
+
+# plot
+plt.clf()
+plt.suptitle(u'Diagramm 3.1: Der Heißluftmoter als Kältemaschine - Thermischer und effektiver Wirkungsgrad über der Motordrehzahl')
+ax1 = plt.subplot(211)
+papstats.plot_data(f, eta_th * 100)
+plt.setp(ax1.get_xticklabels(), visible=False)
+plt.ylabel(u'Thermischer Wirkungsgrad $\eta_{th} \, [\%]$')
+ax2 = plt.subplot(212, sharex=ax1)
+papstats.plot_data(f, eta_eff * 100)
+plt.ylabel(u'Effektiver Wirkungsgrad $\eta_{eff} \, [\%]$')
+plt.xlabel(u'Motordrehzahl $f \, [Hz]$')
+papstats.savefig_a4('3.1.png')

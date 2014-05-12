@@ -48,7 +48,7 @@ d = d_LiF
 
 
 #####
-print "\n# a: Grenzwellenlänge und Plancksche Konstante aus LiF Spektrum"
+print u"\n# a: Grenzwellenlänge und Plancksche Konstante aus LiF Spektrum"
 #####
 
 b, n = np.loadtxt('1.a.txt', skiprows=1, unpack=True)

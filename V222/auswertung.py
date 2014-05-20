@@ -43,8 +43,8 @@ dT = unc.ufloat(2.5, 0.1)
 V = unc.ufloat(240, 2) * const.milli * const.liter / const.minute
 Q_1 = c_W * rho_W * dT * V / f_M
 print papstats.pformat(Q_1, format='c', unit='J', label='Q_1')
-
-print papstats.pformat(Q_1 - Q_2, format='c', unit='J', label=u'zugeführte Energie nach Differenz W')
+W = Q_1 - Q_2
+print papstats.pformat(W, format='c', unit='J', label=u'zugeführte Energie nach Differenz W')
 
 # zugeführte Motorleistung der Kältemaschine pro Umdrehung nach Messung 2.2
 U_M = unc.ufloat(24.0, 0.1)
@@ -53,6 +53,7 @@ f_M = unc.ufloat(281.6, 0.1) / const.minute
 W_M = U_M * I_M / f_M
 print papstats.pformat(W_M, format='c', unit='J', label=u'tatsächliche Motorleistung W_M')
 
+papstats.print_rdiff(W, W_M)
 
 #####
 print u"\n# 3.2: Betrieb als Kältemaschine und Wärmepumpe"
@@ -86,7 +87,7 @@ print papstats.pformat(P_ab, format='c', unit='W', label='P_ab')
 Q_ab = P_ab / f_M
 print papstats.pformat(Q_ab, format='c', unit='J', label='Q_ab')
 Q_pV = np.mean(np.array([26503, 26728, 26781])) * 1e-4
-print papstats.pformat(Q_pV, format='c', unit='J', label='Q_pV')
+print papstats.pformat(Q_pV, format='c', unit='J', label='Q_pV', prec=5)
 P_pV = Q_pV * f_M
 print papstats.pformat(P_pV, format='c', unit='W', label='P_pV')
 eta = Q_pV / Q_el
@@ -108,6 +109,7 @@ eta_th = W_pV / Q_el
 W_D = 2 * const.pi * 0.25 * F
 eta_eff = W_D / Q_el
 
+print papstats.table(labels=['F', 'W_pV', 'f_M', 'Q_el', 'eta_th', 'W_D', 'eta_eff'], units=['N', 'J', 'Hz', 'J', '%', 'J', '%'], columns=[F, W_pV, f, Q_el, eta_th*100, W_D, eta_eff*100])
 
 
 # plot

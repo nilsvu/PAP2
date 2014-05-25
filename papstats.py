@@ -94,8 +94,9 @@ def savefig_a4(filename):
 
 # (Pretty)Tables
 
-def table(labels=None, units=None, columns=None, filename=None):
+def table(labels=None, units=None, columns=None, filename=None, rowlabels=None):
     table = pt.PrettyTable()
+    table.add_column('', rowlabels)
     for i in range(len(columns)):
         try:
             label = labels[i]
@@ -117,26 +118,33 @@ def table(labels=None, units=None, columns=None, filename=None):
 # Formatting
 
 def pformat(v, dv=None, prec=2, label=None, unit=None, format=None, tex=False):
+    if isinstance(v, basestring):
+        return v
     try:
         return np.array([pformat(vi, dv=dv, prec=prec, label=label, unit=unit, format=format) for vi in v])
     except TypeError:
         pass
 
+    if label is None and isinstance(v, unc.Variable):
+        label = v.tag
+    if label is None:
+        label = ''
+    else:
+        label += '='
+    if unit is None:
+        unit = ''
+
     # use uncertainties module formatting
     if isinstance(v, unc.UFloat):
-        if label is None and isinstance(v, unc.Variable):
-            label = v.tag
-        if label is None:
-            label = ''
-        else:
-            label += '='
-        if unit is None:
-            unit = ''
         if format is None or format=='l' or format=='latex':
             format = '.' + str(prec) + 'uL'
         elif format=='c' or format=='console' or format=='p' or format=='pretty':
             format = '.' + str(prec) + 'uP'
-        return label + (u'{:' + format + u'}').format(v) + unit
+            
+    if format is None or format=='l' or format=='latex' or format=='c' or format=='console' or format=='p' or format=='pretty':
+        format = '.' + str(prec) + 'e'
+
+    return label + (u'{:' + format + u'}').format(v) + unit
 
     # format numbers without uncertainties
 

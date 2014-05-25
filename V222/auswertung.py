@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 '''
-Auswertung des Versuchs 256 - Röntgenfluoreszenz
+Auswertung des Versuchs 222 - Heißluftmotor
 Physikalisches Anfängerpraktikum II, Universität Heidelberg
 
 Author: Nils Fischer

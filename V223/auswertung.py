@@ -12,151 +12,134 @@ import scipy as sp
 import uncertainties as unc
 import uncertainties.unumpy as unp
 import matplotlib.pyplot as plt
-import matplotlib.mlab as mlab
 import scipy.constants as const
-import scipy.interpolate as ip
 import prettytable as pt
-
-plt.ion()
-plt.cla()
 
 import os
 parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.sys.path.insert(0,parentdir)
 import papstats
 
-# Konstante Daten
-T  = unc.ufloat(23.4 + sp.constants.zero_Celsius, 0.1)
-a  = unc.ufloat(742, 15) * sp.constants.nano
-eta = unc.ufloat(9.25e-4, 0.1e-4)
+# Konstanten
+T = unc.ufloat(23.4 + const.zero_Celsius, 0.1) # Raumtemperatur
+a = unc.ufloat(742, 15) * const.nano / 2 # Partikelradius
+eta = unc.ufloat(9.25e-4, 0.1e-4) # Viskosität
+k_B_erw = 1.38065e-23
 
-# Import der Daten
-n, t, x, y = np.loadtxt('Messung.dat', skiprows=1, unpack=1)
+#####
+print "3.1: Berechnung des mittleren Verschiebungsquadrats"
+#####
 
-plt.axis('equal')
-plt.plot(x, y, marker='.', ms=10)
-plt.xlabel(ur'x in $\mu m$')
-plt.ylabel(ur'y in $\mu m$')
-plt.title(ur'Abb.1: Bewegung eines Partikels')
+n, t, x, y = np.loadtxt('Messung.dat', skiprows=1, unpack=True)
+x = x * const.micro
+y = y * const.micro
 
-papstats.savefig_a4('1.png')
+# Plot Partikelbewegung
 plt.cla()
-
+plt.axis('equal')
+plt.plot(x / const.micro, y / const.micro, marker='o', ms=5, color='black')
+plt.xlabel(ur'Koordinate $x \, [\mu m]$')
+plt.ylabel(ur'Koordinate $y \, [\mu m]$')
+plt.title(ur'Diagramm 3.1: Bewegung des beobachteten Latex-Partikels')
+papstats.savefig_a4('1.png')
 plt.axis('auto')
 
-# Einheiten fürs Rechnen
-x = x * sp.constants.micro
-y = y * sp.constants.micro
-
-# Erste Berechnungen
+# Differenzen
+dt = np.diff(t)
 dx = np.diff(x)
 dy = np.diff(y)
-dt = np.diff(t)
-
 dx2 = dx**2
 dy2 = dy**2
-
 r2 = dx2 + dy2
 
-
-# Making the statistics table
-labels = [u'Größe', 'Mittelwert', 'Standardabweichung', 'SE des Mittelwerts', 'Minimum', 'Maximum']
-
-col1 = ['dt', 'dx', 'dy', 'dx^2', 'dy^2', 'r^2']
-
-vars = np.array([dt, dx, dy, dx2, dy2, r2])
-
-mean     = vars.mean(axis=1)
-std      = vars.std(axis=1)
+# Spaltenstatistik
+quantities = np.array([dt, dx / const.micro, dy / const.micro, dx2 / const.micro**2, dy2 / const.micro**2, r2 / const.micro**2])
+mean = quantities.mean(axis=1)
+std = quantities.std(axis=1)
 std_mean = std / np.sqrt(n.max())
-min      = vars.min(axis=1)
-max      = vars.max(axis=1)
+minimum = quantities.min(axis=1)
+maximum = quantities.max(axis=1)
+print papstats.table(labels=['dt', 'dx', 'dy', 'dx^2', 'dy^2', 'r^2'], units=['s', 'um', 'um', 'um^2', 'um^2', 'um^2'], columns=np.transpose([mean, std, std_mean, minimum, maximum]), rowlabels=['Mittelwert', 'Standardabw.', 'SE des MW', 'Minimum', 'Maximum'])
 
-columns = [col1, mean, std, std_mean, min, max]
+# Mittelwerte
+t_mean = unc.ufloat(mean[0], std_mean[0])
+r2_mean = unc.ufloat(mean[-1], std_mean[-1]) * const.micro**2
+print papstats.pformat(r2_mean / const.micro**2, label='r^2', unit='um^2', format='c')
+print papstats.pformat(t_mean, label='t', unit='s', format='c')
 
-table = pt.PrettyTable()
+# Boltzmannkonstante
+k_B = 3./2. * const.pi * eta * a / T / t_mean * r2_mean
+print papstats.pformat(k_B, format='c', label='k_B', unit='J/K')
+papstats.print_rdiff(k_B, k_B_erw)
 
-for i in range(len(labels)):
-    table.add_column(labels[i], columns[i])
-
-print table
-
-
-# Werte aus der Tabelle
-single_t = unc.ufloat(mean[0], std_mean[0])
-single_r2 = unc.ufloat(mean[-1], std_mean[-1])
+# Diffusionskoeffizient
+D = k_B * T / (6 * const.pi * eta * a)
+print papstats.pformat(D, format='c', label='D', unit='m^2/s')
 
 
-k = 6 * np.pi * eta * a * single_r2 / 4 / T / single_t
-D = k * T / (6 * np.pi * eta * a)
+#####
+print "3.2: Kontrollverteilung"
+#####
 
-print papstats.pformat(k, format='P', label='k', unit='J/K')
-print papstats.pformat(D, format='P', label='D', unit='m^2/s')
+plt.cla()
+plt.title(ur'Diagramm 3.2: Histogramm der Verschiebungen mit Gauß-Fit')
 
-# Histogram (Kombiniere und flachen des/der Arrays)
-hist_data = (np.array([dx, dy]) / sp.constants.micro).flatten()
+# kombiniertes Histogramm der x- und y-Daten
+dr = np.append(dx, dy) / const.micro
+n, bins, patches = plt.hist(dr, bins=13, label="Messungen")
+bin_centers = bins[:-1] + np.diff(bins) / 2.
 
-# Mathematische Werte
-ma_mu, ma_sigma = hist_data.mean(), hist_data.std()
-
-bin_count = 13
-N, bins, patches = plt.hist(hist_data, bins=bin_count)
-#N, bins = np.histogram(hist_data, bins=bin_count)
-
-bin_middle = np.resize(bins, bin_count) + np.diff(bins)/2.0
-
-# GaussFit
+# Gauss Fit
 def fit_gauss(x, mu, sigma, A):
     return A/np.sqrt((sigma**2)*2*const.pi)*np.exp(-((x-mu)**2)/2/(sigma**2))
+popt, pstats = papstats.curve_fit(fit_gauss, bin_centers, n, p0=[dr.mean(), dr.std(), 1./np.sum(n)])
 
-popt, pstats = papstats.curve_fit(fit_gauss, bin_middle, N)
-
-mu, sigma = popt[0], popt[1]
-
-xspace = np.linspace(-4, 4, 3000)
-#y = mlab.normpdf(x, mu, sigma)
-#plt.plot(x, y)
-
-papstats.plot_fit(fit_gauss, popt, xspace=xspace)
-
+xspace = np.linspace(popt[0].nominal_value - 4 * popt[1].nominal_value, popt[0].nominal_value + 4 * popt[1].nominal_value, 100)
+papstats.plot_fit(fit_gauss, popt, xspace=xspace, plabels=['\mu', '\sigma', 'A'], punits=['\mu m', '\mu m', None])
+plt.xlim(xspace[0], xspace[-1])
+plt.xlabel(ur'Verschiebung $\Delta x$ und $\Delta y$ $[\mu m]$')
+plt.ylabel(ur'Häufigkeit $N$')
 plt.legend()
-
-D = (sigma * sp.constants.micro)**2 / 2 / single_t
-k = 6 * np.pi * eta * D * a / T
-
-print papstats.pformat(k, format='P', label='k', unit='J/K')
-print papstats.pformat(D, format='P', label='D', unit='m^2/s')
-
-plt.xlabel(ur'$\Delta x$ und $\Delta y$ - Verschiebung in $\mu m$')
-plt.ylabel(ur'$N$')
-plt.title(ur'Abb.2: Histogramm der Verschiebungen mit gefitteter Gaußkurve')
-
 papstats.savefig_a4('2.png')
-plt.cla()
+
+# Berechnung der Konstanten
+mu, sigma = popt[0] * const.micro, popt[1] * const.micro
+D_fit = sigma**2 / 2. / t_mean
+print papstats.pformat(D_fit, format='c', label='D_fit', unit='m^2/s')
+papstats.print_rdiff(D_fit, D)
+k_B_fit = 6 * const.pi * eta * D_fit * a / T
+print papstats.pformat(k_B_fit, format='c', label='k_B_fit', unit='J/K')
+papstats.print_rdiff(k_B_fit, k_B_erw)
+papstats.print_rdiff(k_B_fit, k_B)
+
+
+#####
+print "3.3: Kumulative Verteilung der Verschiebungsquadrate"
+#####
 
 r2_cum = np.cumsum(r2)
-new_t = np.resize(t, r2_cum.size) - 1
+t = t[:-1] - t[0]
 
-plt.plot(new_t, r2_cum)
-
-def linear(x, m):
+def fit_lin(x, m):
     return x * m
 
-popt, pstats = papstats.curve_fit(linear, new_t, r2_cum)
+popt, pstats = papstats.curve_fit(fit_lin, t, r2_cum)
 
-xspace = np.linspace(0, 160, 2)
-papstats.plot_fit(linear, popt, xspace=xspace)
-plt.ylim((0, 3.5e-10))
-plt.legend()
-
-D = popt[0] / 4
-k = 6 * np.pi * eta * D * a / T
-
-print papstats.pformat(k, format='P', label='k', unit='J/K')
-print papstats.pformat(D, format='P', label='D', unit='m^2/s')
-
-plt.xlabel(ur'Zeit t in $s$')
-plt.ylabel(ur'$r^2$ kumuliert')
-plt.title(ur'Abb.3: Kumulative Verschiebung eines Partikels')
-
+plt.cla()
+plt.title(ur'Diagramm 3.3: Kumulative Verschiebung des beobachteten Latex-Partikels')
+plt.plot(t, r2_cum / const.micro**2)
+xspace = np.linspace(0, t[-1])
+papstats.plot_fit(fit_lin, popt, xspace=xspace, yscale=1/const.micro**2, punits=['m^2/s'], eq='m*t')
+plt.xlim(xspace[0], xspace[-1])
+plt.xlabel(ur'Zeit $t \, [s]$')
+plt.ylabel(ur'$<r^2> \, [\mu m^2]$ kumulativ')
+plt.legend(loc='upper left')
 papstats.savefig_a4('3.png')
+
+D_cum = popt[0] / 4
+k_B_cum = 6 * const.pi * eta * D_cum * a / T
+print papstats.pformat(k_B_cum, format='c', label='k', unit='J/K')
+papstats.print_rdiff(k_B_cum, k_B_erw)
+papstats.print_rdiff(k_B_cum, k_B)
+print papstats.pformat(D_cum, format='c', label='D', unit='m^2/s')
+papstats.print_rdiff(D_cum, D)

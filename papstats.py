@@ -96,7 +96,8 @@ def savefig_a4(filename):
 
 def table(labels=None, units=None, columns=None, filename=None, rowlabels=None):
     table = pt.PrettyTable()
-    table.add_column('', rowlabels)
+    if rowlabels is not None:
+        table.add_column('', rowlabels)
     for i in range(len(columns)):
         try:
             label = labels[i]

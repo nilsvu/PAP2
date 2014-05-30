@@ -81,7 +81,7 @@ def plot_fit(fit, popt, pstats=None, xspace=np.linspace(0, 1), xscale=1., yscale
     if punits is None:
         punits = [None for plabel in plabels]
     if not kwargs.has_key('label'):
-        kwargs['label'] = 'Fit ' + eq + 'mit:' + ''.join(['\n$%s$' % pformat(popt[i], label=plabels[i], unit=punits[i]) for i in range(len(popt))]) + ('\n' + pstats.legendstring() if pstats is not None else '')
+        kwargs['label'] = 'Fit ' + eq + 'mit:' + ''.join(['\n$%s$' % pformat(popt[i], label=plabels[i], unit=punits[i], format='l') for i in range(len(popt))]) + ('\n' + pstats.legendstring() if pstats is not None else '')
     ydata = fit(xspace, *unp.nominal_values(popt))
     return plt.plot(xspace * xscale, ydata * yscale, **kwargs)
 
@@ -137,10 +137,10 @@ def pformat(v, dv=None, prec=2, label=None, unit=None, format=None, tex=False):
 
     # use uncertainties module formatting
     if isinstance(v, unc.UFloat):
-        if format is None or format=='l' or format=='latex':
-            format = '.' + str(prec) + 'uL'
-        elif format=='c' or format=='console' or format=='p' or format=='pretty':
+        if format is None or format=='c' or format=='console' or format=='p' or format=='pretty':
             format = '.' + str(prec) + 'uP'
+        if format=='l' or format=='latex':
+            format = '.' + str(prec) + 'uL'
             
     if format is None or format=='l' or format=='latex' or format=='c' or format=='console' or format=='p' or format=='pretty':
         format = '.' + str(prec) + 'e'
@@ -186,8 +186,8 @@ def rdiff(r, r_erw=0):
 
 def print_rdiff(r, r_erw):
     d, drel, s = rdiff(r, r_erw)
-    print 'Berechnung: {:.2u}'.format(r)
-    print ('Erwartungswert: {:.2' + ('u' if isinstance(r_erw, unc.UFloat) else 'f') + '}').format(r_erw)
-    print 'Abweichung: {:.2u}'.format(d)
-    print 'rel. Abweichung: {:.2u}%'.format(drel * 100)
-    print 'Sigmabereich: {:.2}'.format(s)
+    print 'Berechnung: ' + pformat(r)
+    print 'Erwartungswert: ' + pformat(r_erw)
+    print 'Abweichung: ' + pformat(d)
+    print 'rel. Abweichung: ' + pformat(drel * 100, unit='%')
+    print 'Sigmabereich: ' + pformat(s)

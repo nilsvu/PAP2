@@ -1,6 +1,4 @@
-Pendel
- Offset Messung
-
+Pendel Offset Messung
 0.025 -0.155 -0.024
 0.050 -0.222 -0.024
 0.075 -0.222 -0.073

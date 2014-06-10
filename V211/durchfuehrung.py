@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 '''
-Auswertung des Versuches 211 - Gekoppelte Pendel
+Durchführung des Versuches 211 - Gekoppelte Pendel
 Phyiskalisches Anfänger Praktikum II - Universität Heidelberg
 
 Autoren: Christian Kohlstedde und Nils Fischer
@@ -27,7 +27,7 @@ sys.stdout=codecs.getwriter('utf-8')(sys.stdout)
 
 
 print '### 2.1 Offsets'
-data = np.loadtxt('1.offset.txt', skiprows=3)
+data = np.loadtxt('1.offset.txt', skiprows=1)
 
 offset1 = np.mean(data[:,1])
 offset2 = np.mean(data[:,2])

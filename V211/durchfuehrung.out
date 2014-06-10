@@ -1,0 +1,87 @@
+### 2.1 Offsets
+Offset des Pendel 1 -0.150147132867
+Offset des Pendel 2 -0.0773225174825
+
+### 2.2 Eigenfrequenzen der ungekoppelten Pendel ###
+t_1=24.240±0.071s
+t_2=24.290±0.071s
+T_1=1.6160±0.0047s
+T_2=1.6193±0.0047s
+
+### 2.3 Gekoppelte Pendel ###
+Länge l=0.1920±0.0010m
+symmetrische Eigenschwingungen
+t_1=32.310±0.071s
+t_2=32.240±0.071s
+T_1=1.6155±0.0035s
+T_2=1.6120±0.0035s
+antisymmetrische Eigenschwingungen
+t_1=31.020±0.071s
+t_2=30.980±0.071s
+T_1=1.5510±0.0035s
+T_2=1.5490±0.0035s
+
+Länge l=0.2920±0.0010m
+symmetrische Eigenschwingungen
+t_1=32.260±0.071s
+t_2=32.250±0.071s
+T_1=1.6130±0.0035s
+T_2=1.6125±0.0035s
+antisymmetrische Eigenschwingungen
+t_1=32.330±0.071s
+t_2=32.360±0.071s
+T_1=1.4695±0.0032s
+T_2=1.4709±0.0032s
+
+Länge l=0.3920±0.0010m
+symmetrische Eigenschwingungen
+t_1=32.210±0.071s
+t_2=32.240±0.071s
+T_1=1.6105±0.0035s
+T_2=1.6120±0.0035s
+antisymmetrische Eigenschwingungen
+t_1=27.310±0.071s
+t_2=27.300±0.071s
+T_1=1.3655±0.0035s
+T_2=1.3650±0.0035s
+
+### 2.4 Superposition der Anrengung ###
+
+## Messung 1
+Länge 0.3920±0.0010
+Schwingungsperiodendauer
+t1_1=27.430±0.071s
+t2_1=27.420±0.071s
+T1_1=1.3715±0.0035s
+T2_1=1.3710±0.0035s
+Schwebungsperiodendauer
+t1_2=27.43±0.28s
+t2_2=27.42±0.28s
+T1_2=18.29±0.19s
+T2_2=18.28±0.19s
+
+## Messung 2
+Länge 0.2920±0.0010
+Schwingungsperiodendauer
+t1_1=36.910±0.071s
+t2_1=36.930±0.071s
+T1_1=1.4764±0.0028s
+T2_1=1.4772±0.0028s
+Schwebungsperiodendauer
+t1_2=50.86±0.71s
+t2_2=50.86±0.71s
+T1_2=33.91±0.47s
+T2_2=33.91±0.47s
+
+## Messung 3
+Länge 0.1920±0.0010
+Schwingungsperiodendauer
+t1_1=23.710±0.071s
+t2_1=23.730±0.071s
+T1_1=1.5807±0.0047s
+T2_1=1.5820±0.0047s
+Schwebungsperiodendauer
+t1_2=39.81±0.71s
+t2_2=39.63±0.71s
+T1_2=79.6±1.4s
+T2_2=79.3±1.4s

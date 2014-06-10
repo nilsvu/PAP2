@@ -20,6 +20,11 @@ parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.sys.path.insert(0,parentdir)
 import papstats
 
+# Unicode Hack
+import sys
+import codecs
+sys.stdout=codecs.getwriter('utf-8')(sys.stdout)
+
 
 print '### 2.1 Offsets'
 data = np.loadtxt('1.offset.txt', skiprows=3)
@@ -30,7 +35,7 @@ offset2 = np.mean(data[:,2])
 print u'Offset des Pendel 1', offset1
 print u'Offset des Pendel 2', offset2
 
-
+print ''
 print "### 2.2 Eigenfrequenzen der ungekoppelten Pendel ###"
 
 t1 = unc.ufloat(25.51, 0.05) - unc.ufloat(1.27, 0.05)

@@ -1,4 +1,4 @@
-antisymmetrische Eigenschwingung 29.2cm
+3.2.2 - antisymmetrische Eigenschwingung bei $29.2cm$
 0.025 -3.180 4.867
 0.050 -3.713 5.742
 0.082 -3.779 5.863

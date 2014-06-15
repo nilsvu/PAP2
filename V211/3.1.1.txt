@@ -1,4 +1,4 @@
-symmetrische Eigenschwingung bei Kopplung 19.2cm
+3.1.1 - symmetrische Eigenschwingung bei $19.2cm$
 0.025 -3.158 -4.610
 0.050 -4.112 -5.485
 0.075 -4.223 -5.606

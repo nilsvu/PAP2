@@ -1,4 +1,4 @@
-symmetrische Eigenschwingung 29.2cm
+3.2.1 - symmetrische Eigenschwingung bei $29.2cm$
 0.025 0.838 3.555
 0.050 1.127 4.843
 0.081 1.327 5.426

@@ -94,7 +94,7 @@ def savefig_a4(filename):
 
 # (Pretty)Tables
 
-def table(labels=None, units=None, columns=None, filename=None, rowlabels=None):
+def table(labels=None, units=None, columns=None, filename=None, rowlabels=None, **kwargs):
     table = pt.PrettyTable()
     if rowlabels is not None:
         table.add_column('', rowlabels)
@@ -109,7 +109,7 @@ def table(labels=None, units=None, columns=None, filename=None, rowlabels=None):
             unit = None
         if label is not None and unit is not None:
             label += ' ['+unit+']'
-        table.add_column(label, pformat(columns[i], format='p'))
+        table.add_column(label, pformat(columns[i], format='p', **kwargs))
     if filename is not None:
         with open(filename, 'w') as file:
             file.write(table.get_string())

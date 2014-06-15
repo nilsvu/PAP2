@@ -4,7 +4,7 @@
 Auswertung des Versuchs 232 - Michelson-Interferometer
 Physikalisches Anfängerpraktikum II, Universität Heidelberg
 
-Author: Nils Fischer
+Autoren: Nils Fischer und Christian Kohlstedde
 '''
 
 import numpy as np

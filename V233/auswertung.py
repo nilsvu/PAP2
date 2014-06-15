@@ -4,7 +4,7 @@
 Auswertung des Versuchs 233 - Fourieroptik
 Physikalisches Anfängerpraktikum II, Universität Heidelberg
 
-Author: Nils Fischer
+Autor: Nils Fischer
 '''
 
 import numpy as np

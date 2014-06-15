@@ -59,7 +59,7 @@ std = quantities.std(axis=1)
 std_mean = std / np.sqrt(n.max())
 minimum = quantities.min(axis=1)
 maximum = quantities.max(axis=1)
-print papstats.table(labels=['dt', 'dx', 'dy', 'dx^2', 'dy^2', 'r^2'], units=['s', 'um', 'um', 'um^2', 'um^2', 'um^2'], columns=np.transpose([mean, std, std_mean, minimum, maximum]), rowlabels=['Mittelwert', 'Standardabw.', 'SE des MW', 'Minimum', 'Maximum'])
+print papstats.table(labels=['dt', 'dx', 'dy', 'dx^2', 'dy^2', 'r^2'], units=['s', 'um', 'um', 'um^2', 'um^2', 'um^2'], columns=np.transpose([mean, std, std_mean, minimum, maximum]), rowlabels=['Mittelwert', 'Standardabw.', 'SE des MW', 'Minimum', 'Maximum'], prec=5)
 
 # Mittelwerte
 t_mean = unc.ufloat(mean[0], std_mean[0])

@@ -230,7 +230,7 @@ for n in range(3):
 	if I_0 is None:
 		I_0 = np.max(Ispace)
 	Ispace = Ispace / I_0
-	plt.plot(yspace, Ispace)
+	plt.plot(yspace, Ispace, color='black')
 	plt.xlabel(r'$\frac{y}{d}$')
 	if n == 0:
 		plt.ylabel(r'$\frac{I}{I_0}$')
@@ -276,7 +276,7 @@ for y in yspace:
 
 plt.clf()
 plt.title('Diagramm 3.5: Objektbild des Doppelspalts bei Fall a)')
-plt.plot(yspace / g * 2, Ispace / np.max(Ispace))
+plt.plot(yspace / g * 2, Ispace / np.max(Ispace), color='black')
 plt.xlabel(r'$y*\frac{2}{g}$')
 plt.ylabel(r'$\frac{I}{I_0}$')
 papstats.savefig_a4('3.5.png')
@@ -286,12 +286,12 @@ papstats.print_rdiff(k_y_1_erw, k_y_1)
 
 print u"Fall b: Doppelstruktur verschwindet"
 
-
 k_y_2_erw = 2 * const.pi / (635 * const.nano) * unc.ufloat(6.7, 0.2) * const.milli / 100 / f
 k_y_2_begin = k_y_1.nominal_value
 k_y_2_end = 1e3
 i = 0
 plt.clf()
+plt.suptitle(u'Diagramm 3.6: Objektbild des Doppelspalts bei Übergang zu Fall b)')
 I_0 = None
 ax = None
 kspace = np.linspace(k_y_2_begin, k_y_2_end, 9)
@@ -306,7 +306,7 @@ for k_y in kspace:
 		ax = ax_i
 	if I_0 is None:
 		I_0 = np.max(Ispace)
-	plt.plot(yspace / g * 2, Ispace / I_0)
+	plt.plot(yspace / g * 2, Ispace / I_0, color='black')
 	if i < 6:
 		plt.setp(ax_i.get_xticklabels(), visible=False)
 	else:

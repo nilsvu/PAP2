@@ -55,16 +55,17 @@ data = np.loadtxt('2.3.txt', skiprows=1)
 w_1 = unp.uarray(data[:,0], 10) * 2 * const.pi / const.minute
 T_P = unp.uarray(np.transpose(data[:,1::2]), 2)
 w_2 = unp.uarray(np.transpose(data[:,2::2]), 10) * 2 * const.pi / const.minute
-w_2_erw = w_1 * unp.exp(T_P / tau)
+w_2_erw = w_1 * unp.exp(-T_P / tau)
 diff = w_2 - w_2_erw
-w_F = unp.uarray(unp.nominal_values(w_1 + w_2_erw) / 2., np.sqrt((unp.nominal_values(w_1 - w_2_erw) / 2)**2 + unp.std_devs(w_1 + w_2_erw)**2))
+w_2 = np.mean([w_2, w_2_erw], axis=0)
+w_F = unp.uarray(unp.nominal_values(w_1 + w_2) / 2., np.sqrt((unp.nominal_values(w_1 - w_2) / 2)**2 + unp.std_devs(w_1 + w_2)**2))
 
 def fit_linear_origin(x, m):
 	return m * x
 
 n_m = np.array([1, 1, 2, 2])
-d = np.array([15, 20, 15, 20]) * const.centi
-mlabels = [str(n_m[i]) + 'm, ' + str(int(d[i]/const.centi)) + 'cm' for i in range(len(n_m))]
+d = unp.uarray([15, 20, 15, 20], 0.1) * const.centi
+mlabels = [str(n_m[i]) + 'm, ' + str(int(d[i].nominal_value/const.centi)) + 'cm' for i in range(len(n_m))]
 d = d + 1.1 / 2. * const.centi * n_m
 s = []
 plt.clf()
@@ -93,7 +94,7 @@ papstats.savefig_a4('3.2.png')
 s = np.array(s)
 
 I = n_m * 9.85 * const.gram * const.g * d * s / 2 / const.pi
-print papstats.table(labels=['Messung', 'I'], columns=[mlabels, I / const.gram ], units=[None, 'g*m^2'])
+print papstats.table(labels=['Messung', 's', 'd', 'I'], columns=[mlabels, s, d / const.centi, I / const.gram ], units=[None, 's^2', 'cm', 'g*m^2'])
 I = np.mean(I)
 print papstats.pformat(I / const.gram, unit='g*m^2', label=u'mittleres Trägheitsmoment')
 
@@ -111,8 +112,11 @@ print papstats.table(labels=['w_F', u'Ω'], units=['Hz', 'Hz'], columns=[w_F, W]
 popt, pstats = papstats.curve_fit(fit_linear_origin, w_F, W)
 
 plt.clf()
+plt.title(u'Diagramm 3.3: Umlauffrequenz der momentanen Drehachse über der Eigendrehfrequenz')
 papstats.plot_data(w_F, W)
-papstats.plot_fit(fit_linear_origin, popt, xspace=unp.nominal_values(w_F), punits=['s'])
+papstats.plot_fit(fit_linear_origin, popt, xspace=unp.nominal_values(w_F), plabels='s')
+plt.xlabel('Eigendrehfrequenz $\omega_F \, [Hz]$')
+plt.ylabel('Umlauffrequenz der momentanen Drehachse $\Omega \, [Hz]$')
 plt.legend(loc='upper left')
 papstats.savefig_a4('3.3.png')
 
@@ -133,8 +137,11 @@ w_N = unp.uarray(w_N, 15)
 popt, pstats = papstats.curve_fit(fit_linear_origin, w_F, w_N)
 
 plt.clf()
+plt.title(u'Diagramm 3.4: Nutationsfrequenz über der Eigendrehfrequenz')
 papstats.plot_data(w_F, w_N)
-papstats.plot_fit(fit_linear_origin, popt, xspace=unp.nominal_values(w_F))
+papstats.plot_fit(fit_linear_origin, popt, xspace=unp.nominal_values(w_F), plabels='s')
+plt.xlabel('Eigendrehfrequenz $\omega_F \, [Hz]$')
+plt.ylabel('Nutationsfrequenz $\Omega \, [Hz]$')
 plt.legend(loc='upper left')
 papstats.savefig_a4('3.4.png')
 

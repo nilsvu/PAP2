@@ -1,0 +1,15 @@
+Symbol	y [nm]	Element/Molekül
+A	759.4	telluric oxygen
+B	686.7	telluric oxygen
+C / H_\alpha	656.3	hydrogen
+D_1	589.6	sodium
+D_2	589.0	sodium
+D_3	587.6	helium
+E	527.0	iron and calcium
+b_1	518.4	magnesium
+F / H_\beta	486.1	hydrogen
+H_\gamma	434.0	hydrogen
+G	430.8	iron and calcium
+H_\delta	410.1	hydrogen
+H	396.8	calcium
+K	393.4	calcium
